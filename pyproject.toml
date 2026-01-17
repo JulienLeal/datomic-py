@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pydatomic"
+version = "0.2.0"
+description = "Datomic REST API client with EDN parser"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+keywords = ["datomic", "database", "edn", "rest-api", "clojure"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+]
+dependencies = [
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/gns24/pydatomic"
+Repository = "https://github.com/gns24/pydatomic"
+Documentation = "https://github.com/gns24/pydatomic#readme"
+Issues = "https://github.com/gns24/pydatomic/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pydatomic"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "D"]
+ignore = ["D100", "D104", "D105", "D107", "D212"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["pydatomic"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]
