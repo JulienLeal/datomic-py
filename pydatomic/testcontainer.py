@@ -5,7 +5,7 @@ using testcontainers-python. It sets up a Datomic environment with a REST API
 that can be used with the pydatomic client library.
 
 The container runs:
-- Datomic Free transactor (in-memory dev mode)
+- Datomic Pro transactor (in-memory dev mode)
 - Datomic REST server (bin/rest)
 """
 
@@ -26,14 +26,14 @@ if TYPE_CHECKING:
 TRANSACTOR_PORT = 4334
 REST_PORT = 3000
 
-# Datomic Free version
+# Datomic Pro version
 DATOMIC_VERSION = "1.0.7482"
 
 
 class DatomicContainer:
-    """A testcontainer that runs Datomic Free with a REST API server.
+    """A testcontainer that runs Datomic Pro with a REST API server.
 
-    This container runs a Datomic Free transactor with an embedded REST server,
+    This container runs a Datomic Pro transactor with an embedded REST server,
     providing HTTP access to the database compatible with pydatomic.
 
     The container is built from scratch using an ARM64/AMD64 compatible base
@@ -56,7 +56,7 @@ class DatomicContainer:
 
         Args:
             storage_alias: The storage alias to use for the REST API.
-            datomic_version: The version of Datomic Free to use.
+            datomic_version: The version of Datomic Pro to use.
         """
         self.storage_alias = storage_alias
         self.datomic_version = datomic_version

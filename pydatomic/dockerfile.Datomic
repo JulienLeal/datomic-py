@@ -14,7 +14,7 @@ RUN useradd -m -s /bin/bash datomic
 # Set working directory
 WORKDIR /opt/datomic
 
-# Download and extract Datomic Free
+# Download and extract Datomic Pro
 RUN curl -L "https://datomic-pro-downloads.s3.amazonaws.com/{datomic_version}/datomic-pro-{datomic_version}.zip" -o datomic.zip \
     && unzip datomic.zip \
     && mv datomic-pro-{datomic_version}/* . \

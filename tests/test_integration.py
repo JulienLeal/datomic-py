@@ -1,6 +1,6 @@
 """Integration tests for pydatomic with a real Datomic database.
 
-These tests use testcontainers to spin up a Datomic Free instance
+These tests use testcontainers to spin up a Datomic Pro instance
 with a REST API server for testing.
 
 To run these tests:
