@@ -39,14 +39,14 @@ class TestAttribute:
         """Test creating a basic attribute."""
         attr = Attribute(":person/name", STRING)
 
-        assert ":db/id #db/id[:db.part/db]" in attr
         assert ":db/ident :person/name" in attr
         assert ":db/valueType :db.type/string" in attr
         assert ":db/cardinality :db.cardinality/one" in attr
-        assert ":db/unique nil" in attr
-        assert ":db/index false" in attr
-        assert ":db/fulltext false" in attr
-        assert ":db/noHistory false" in attr
+        # Optional attributes should not be present when not set
+        assert ":db/unique" not in attr
+        assert ":db/index" not in attr
+        assert ":db/fulltext" not in attr
+        assert ":db/noHistory" not in attr
 
     def test_attribute_with_doc(self):
         """Test creating an attribute with documentation."""
@@ -109,8 +109,9 @@ class TestAttribute:
         assert ":db/cardinality :db.cardinality/one" in attr
         assert ":db/unique :db.unique/identity" in attr
         assert ":db/index true" in attr
-        assert ":db/fulltext false" in attr
-        assert ":db/noHistory false" in attr
+        # fulltext and noHistory are False, so they shouldn't be included
+        assert ":db/fulltext" not in attr
+        assert ":db/noHistory" not in attr
 
     def test_attribute_returns_string(self):
         """Test that Attribute returns a string."""

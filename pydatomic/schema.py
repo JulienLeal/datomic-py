@@ -18,22 +18,37 @@ def Attribute(
     fulltext: bool = False,
     noHistory: bool = False,
 ) -> str:
-    """
-    Create a Datomic attribute definition.
+    """Create a Datomic attribute definition.
 
-    Arguments which require clojure nil take Python None.
+    Creates an EDN map representing a Datomic schema attribute.
+    Only includes optional attributes when they have non-default values.
+
+    Args:
+        ident: The attribute identifier (e.g., ":person/name").
+        valueType: The attribute type (e.g., STRING, BOOLEAN).
+        doc: Optional documentation string.
+        cardinality: The cardinality (ONE or MANY).
+        unique: Optional uniqueness constraint (IDENTITY or VALUE).
+        index: Whether to index the attribute.
+        fulltext: Whether to enable fulltext search.
+        noHistory: Whether to exclude from history.
+
+    Returns:
+        An EDN string representing the attribute definition.
     """
-    parts = [":db/id #db/id[:db.part/db]"]
-    parts.append(f":db/ident {ident}")
+    parts = [f":db/ident {ident}"]
     parts.append(f":db/valueType {valueType}")
     parts.append(f":db/cardinality {cardinality}")
     if doc is not None:
-        parts.append(":db/doc " + doc)
-    unique_map = {IDENTITY: IDENTITY, VALUE: VALUE, None: "nil"}
-    parts.append(f":db/unique {unique_map[unique]}")
-    parts.append(f":db/index {'true' if index else 'false'}")
-    parts.append(f":db/fulltext {'true' if fulltext else 'false'}")
-    parts.append(f":db/noHistory {'true' if noHistory else 'false'}")
+        parts.append(f":db/doc {doc}")
+    if unique is not None:
+        parts.append(f":db/unique {unique}")
+    if index:
+        parts.append(":db/index true")
+    if fulltext:
+        parts.append(":db/fulltext true")
+    if noHistory:
+        parts.append(":db/noHistory true")
     return "{" + "\n ".join(parts) + "}"
 
 

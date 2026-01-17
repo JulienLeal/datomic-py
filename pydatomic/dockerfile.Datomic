@@ -1,0 +1,44 @@
+# Use Eclipse Temurin JDK which supports both ARM64 and AMD64
+FROM eclipse-temurin:11-jdk
+
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    unzip \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create datomic user
+RUN useradd -m -s /bin/bash datomic
+
+# Set working directory
+WORKDIR /opt/datomic
+
+# Download and extract Datomic Free
+RUN curl -L "https://datomic-pro-downloads.s3.amazonaws.com/{datomic_version}/datomic-pro-{datomic_version}.zip" -o datomic.zip \
+    && unzip datomic.zip \
+    && mv datomic-pro-{datomic_version}/* . \
+    && rm -rf datomic-pro-{datomic_version} datomic.zip \
+    && chown -R datomic:datomic /opt/datomic
+
+# Copy start script
+COPY start.sh /opt/datomic/start.sh
+RUN chmod +x /opt/datomic/start.sh && chown datomic:datomic /opt/datomic/start.sh
+
+# Create transactor properties file for dev mode
+RUN echo "protocol=dev" > /opt/datomic/transactor-dev.properties \
+    && echo "host=localhost" >> /opt/datomic/transactor-dev.properties \
+    && echo "port={transactor_port}" >> /opt/datomic/transactor-dev.properties \
+    && echo "memory-index-max=256m" >> /opt/datomic/transactor-dev.properties \
+    && echo "memory-index-threshold=32m" >> /opt/datomic/transactor-dev.properties \
+    && echo "object-cache-max=128m" >> /opt/datomic/transactor-dev.properties \
+    && chown datomic:datomic /opt/datomic/transactor-dev.properties
+
+# Expose ports
+EXPOSE {transactor_port} {rest_port}
+
+# Switch to datomic user
+USER datomic
+
+# Run the start script
+CMD ["/opt/datomic/start.sh"]

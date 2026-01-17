@@ -1,7 +1,7 @@
 """Tests for the Datomic REST client."""
 
 from datetime import datetime
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
 import pytest
 import requests
@@ -12,12 +12,6 @@ from pydatomic.exceptions import DatomicClientError, DatomicConnectionError
 
 class TestDatomic:
     """Tests for Datomic client."""
-
-    @pytest.fixture
-    def mock_requests(self):
-        """Fixture to mock requests module."""
-        with patch("pydatomic.datomic.requests") as mock:
-            yield mock
 
     def test_create_db(self, mock_requests):
         """Verify create_database()."""
@@ -154,12 +148,6 @@ class TestDatomic:
 class TestDatomicErrors:
     """Tests for error handling in Datomic client."""
 
-    @pytest.fixture
-    def mock_requests(self):
-        """Fixture to mock requests module."""
-        with patch("pydatomic.datomic.requests") as mock:
-            yield mock
-
     def test_create_database_failure(self, mock_requests):
         """Test create_database with error response."""
         conn = Datomic("http://localhost:3000/", "tdb")
@@ -200,38 +188,32 @@ class TestDatomicErrors:
 class TestDatomicTimeout:
     """Tests for timeout handling in Datomic client."""
 
-    @pytest.fixture
-    def mock_requests(self):
-        """Fixture to mock requests module."""
-        with patch("pydatomic.datomic.requests") as mock:
-            # Preserve the real exception classes
-            mock.exceptions = requests.exceptions
-            yield mock
-
-    def test_default_timeout(self, mock_requests):
+    def test_default_timeout(self, mock_requests_with_exceptions):
         """Test that default timeout is used."""
         conn = Datomic("http://localhost:3000/", "tdb")
-        mock_requests.post.return_value = Mock(status_code=201)
+        mock_requests_with_exceptions.post.return_value = Mock(status_code=201)
 
         conn.create_database("test")
 
-        call_args = mock_requests.post.call_args
+        call_args = mock_requests_with_exceptions.post.call_args
         assert call_args[1]["timeout"] == 30.0
 
-    def test_custom_timeout(self, mock_requests):
+    def test_custom_timeout(self, mock_requests_with_exceptions):
         """Test that custom timeout is used."""
         conn = Datomic("http://localhost:3000/", "tdb", timeout=60.0)
-        mock_requests.post.return_value = Mock(status_code=201)
+        mock_requests_with_exceptions.post.return_value = Mock(status_code=201)
 
         conn.create_database("test")
 
-        call_args = mock_requests.post.call_args
+        call_args = mock_requests_with_exceptions.post.call_args
         assert call_args[1]["timeout"] == 60.0
 
-    def test_timeout_error(self, mock_requests):
+    def test_timeout_error(self, mock_requests_with_exceptions):
         """Test timeout error handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
-        mock_requests.post.side_effect = requests.exceptions.Timeout("Connection timed out")
+        mock_requests_with_exceptions.post.side_effect = requests.exceptions.Timeout(
+            "Connection timed out"
+        )
 
         with pytest.raises(DatomicConnectionError, match="timed out"):
             conn.create_database("test")
@@ -240,28 +222,22 @@ class TestDatomicTimeout:
 class TestDatomicConnectionErrors:
     """Tests for connection error handling in Datomic client."""
 
-    @pytest.fixture
-    def mock_requests(self):
-        """Fixture to mock requests module."""
-        with patch("pydatomic.datomic.requests") as mock:
-            # Preserve the real exception classes
-            mock.exceptions = requests.exceptions
-            yield mock
-
-    def test_connection_error(self, mock_requests):
+    def test_connection_error(self, mock_requests_with_exceptions):
         """Test connection error handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
-        mock_requests.post.side_effect = requests.exceptions.ConnectionError(
+        mock_requests_with_exceptions.post.side_effect = requests.exceptions.ConnectionError(
             "Connection refused"
         )
 
         with pytest.raises(DatomicConnectionError, match="Failed to connect"):
             conn.create_database("test")
 
-    def test_request_exception(self, mock_requests):
+    def test_request_exception(self, mock_requests_with_exceptions):
         """Test generic request exception handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
-        mock_requests.post.side_effect = requests.exceptions.RequestException("Unknown error")
+        mock_requests_with_exceptions.post.side_effect = requests.exceptions.RequestException(
+            "Unknown error"
+        )
 
         with pytest.raises(DatomicClientError, match="Request to.*failed"):
             conn.create_database("test")

@@ -21,6 +21,7 @@ classifiers = [
 ]
 dependencies = [
     "requests>=2.31.0",
+    "testcontainers",
 ]
 
 [project.optional-dependencies]
@@ -28,6 +29,9 @@ dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
+]
+integration = [
+    "testcontainers>=4.0.0",
 ]
 
 [project.urls]
@@ -51,6 +55,9 @@ ignore = ["D100", "D104", "D105", "D107", "D212"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+]
 
 [tool.coverage.run]
 source = ["pydatomic"]
