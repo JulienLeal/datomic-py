@@ -54,6 +54,27 @@ print(results)  # ((17592186045417, 'Alice'),)
 entity = db.entity(17592186045417)
 ```
 
+### Async REST Client
+
+```python
+import asyncio
+from datomic_py import AsyncDatomic
+
+async def main():
+    conn = AsyncDatomic('http://localhost:3000/', 'my-storage')
+    db = await conn.create_database('my-db')
+
+    await db.transact([
+        '{:db/id #db/id[:db.part/user] :person/name "Alice"}'
+    ])
+
+    results = await db.query('[:find ?e ?n :where [?e :person/name ?n]]')
+    print(results)
+    entity = await db.entity(results[0][0])
+
+asyncio.run(main())
+```
+
 ### EDN Parser
 
 ```python
