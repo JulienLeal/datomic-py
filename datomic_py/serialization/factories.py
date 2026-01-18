@@ -5,9 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import fields as dataclass_fields
 from dataclasses import is_dataclass
-from typing import Any, Generic, NamedTuple, Protocol, TypeVar, runtime_checkable
+from typing import Any, NamedTuple, Protocol, TypeVar, runtime_checkable
 
-T = TypeVar("T")
 T_co = TypeVar("T_co", covariant=True)
 
 
@@ -42,7 +41,7 @@ def dict_row(row: tuple[Any, ...], columns: Sequence[str]) -> dict[str, Any]:
     return dict(zip(columns, row, strict=True))
 
 
-class NamedTupleRowFactory(Generic[T]):
+class NamedTupleRowFactory[T]:
     """
     Factory that produces namedtuples for each row.
 
@@ -63,6 +62,7 @@ class NamedTupleRowFactory(Generic[T]):
         self._name = name
 
     def __call__(self, row: tuple[Any, ...], columns: Sequence[str]) -> Any:
+        """Convert a row tuple to a namedtuple instance."""
         columns_tuple = tuple(columns)
         if self._nt_class is None or self._columns != columns_tuple:
             # Create new namedtuple class for these columns
@@ -95,7 +95,7 @@ def namedtuple_row(name: str = "Row") -> NamedTupleRowFactory[Any]:
     return NamedTupleRowFactory(name)
 
 
-class DataclassRowFactory(Generic[T]):
+class DataclassRowFactory[T]:
     """
     Factory that produces dataclass instances for each row.
 
@@ -123,6 +123,7 @@ class DataclassRowFactory(Generic[T]):
         self._dc_fields = {f.name for f in dataclass_fields(cls)}
 
     def __call__(self, row: tuple[Any, ...], columns: Sequence[str]) -> T:
+        """Convert a row tuple to a dataclass instance."""
         kwargs: dict[str, Any] = {}
         for col, val in zip(columns, row, strict=True):
             # Apply field mapping if provided
@@ -134,7 +135,7 @@ class DataclassRowFactory(Generic[T]):
         return self._cls(**kwargs)
 
 
-def dataclass_row(
+def dataclass_row[T](
     cls: type[T], field_mapping: dict[str, str] | None = None
 ) -> DataclassRowFactory[T]:
     """
@@ -194,6 +195,7 @@ class CleanDictEntityFactory:
         self._key_transform = key_transform
 
     def __call__(self, entity: dict[str, Any]) -> dict[str, Any]:
+        """Transform entity dict keys to clean Python names."""
         result: dict[str, Any] = {}
         for key, value in entity.items():
             if self._key_transform:
@@ -237,7 +239,7 @@ def clean_dict_entity(
     return CleanDictEntityFactory(include_namespace, key_transform)
 
 
-class DataclassEntityFactory(Generic[T]):
+class DataclassEntityFactory[T]:
     """
     Factory that produces dataclass instances from entities.
 
@@ -270,6 +272,7 @@ class DataclassEntityFactory(Generic[T]):
         self._dc_fields = {f.name for f in dataclass_fields(cls)}
 
     def __call__(self, entity: dict[str, Any]) -> T:
+        """Convert an entity dict to a dataclass instance."""
         kwargs: dict[str, Any] = {}
 
         for key, value in entity.items():
@@ -291,7 +294,7 @@ class DataclassEntityFactory(Generic[T]):
         return self._cls(**kwargs)
 
 
-def dataclass_entity(
+def dataclass_entity[T](
     cls: type[T],
     field_mapping: dict[str, str] | None = None,
     strict: bool = False,

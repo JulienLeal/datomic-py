@@ -1,4 +1,4 @@
-"""
+r"""
 Integration tests for the serialization module with a real Datomic database.
 
 These tests verify that serialization features work correctly with actual
@@ -6,7 +6,8 @@ Datomic query and entity results.
 
 To run these tests:
     pip install testcontainers
-    DOCKER_HOST=... TESTCONTAINERS_RYUK_DISABLED=true pytest tests/test_serialization_integration.py -v
+    DOCKER_HOST=... TESTCONTAINERS_RYUK_DISABLED=true \
+        pytest tests/test_serialization_integration.py -v
 
 Note: These tests require Docker to be running.
 """
@@ -46,8 +47,14 @@ class TestRowFactoriesIntegration:
         db.transact(schema)
 
         # Insert test data
-        db.transact(['{:db/id #db/id[:db.part/user] :employee/name "Alice" :employee/email "alice@example.com" :employee/department "Engineering"}'])
-        db.transact(['{:db/id #db/id[:db.part/user] :employee/name "Bob" :employee/email "bob@example.com" :employee/department "Sales"}'])
+        db.transact([
+            '{:db/id #db/id[:db.part/user] :employee/name "Alice" '
+            ':employee/email "alice@example.com" :employee/department "Engineering"}'
+        ])
+        db.transact([
+            '{:db/id #db/id[:db.part/user] :employee/name "Bob" '
+            ':employee/email "bob@example.com" :employee/department "Sales"}'
+        ])
 
     def test_dict_row_with_query(self, db):
         """Test dict_row factory with actual query."""
@@ -132,7 +139,10 @@ class TestEntityFactoriesIntegration:
 
     def test_clean_dict_entity_with_real_entity(self, db):
         """Test clean_dict_entity with actual entity."""
-        result = db.transact(['{:db/id #db/id[:db.part/user] :customer/name "Charlie" :customer/email "charlie@example.com" :customer/tier "gold"}'])
+        result = db.transact([
+            '{:db/id #db/id[:db.part/user] :customer/name "Charlie" '
+            ':customer/email "charlie@example.com" :customer/tier "gold"}'
+        ])
         eid = list(result.get(":tempids", {}).values())[0]
 
         factory = clean_dict_entity()
@@ -146,7 +156,10 @@ class TestEntityFactoriesIntegration:
 
     def test_clean_dict_entity_with_namespace(self, db):
         """Test clean_dict_entity with namespace included."""
-        result = db.transact(['{:db/id #db/id[:db.part/user] :customer/name "Diana" :customer/email "diana@example.com"}'])
+        result = db.transact([
+            '{:db/id #db/id[:db.part/user] :customer/name "Diana" '
+            ':customer/email "diana@example.com"}'
+        ])
         eid = list(result.get(":tempids", {}).values())[0]
 
         factory = clean_dict_entity(include_namespace=True)
@@ -164,10 +177,15 @@ class TestEntityFactoriesIntegration:
             name: str
             email: str
 
-        result = db.transact(['{:db/id #db/id[:db.part/user] :customer/name "Eve" :customer/email "eve@example.com"}'])
+        result = db.transact([
+            '{:db/id #db/id[:db.part/user] :customer/name "Eve" '
+            ':customer/email "eve@example.com"}'
+        ])
         eid = list(result.get(":tempids", {}).values())[0]
 
-        factory = dataclass_entity(Customer, {"name": ":customer/name", "email": ":customer/email"})
+        factory = dataclass_entity(
+            Customer, {"name": ":customer/name", "email": ":customer/email"}
+        )
         entity = db.entity(eid, entity_factory=factory)
 
         assert isinstance(entity, Customer)
@@ -195,7 +213,10 @@ class TestDatomicModelIntegration:
             name: str = Field(":project/name")
             status: str = Field(":project/status")
 
-        result = db.transact(['{:db/id #db/id[:db.part/user] :project/name "Website Redesign" :project/status "active"}'])
+        result = db.transact([
+            '{:db/id #db/id[:db.part/user] :project/name "Website Redesign" '
+            ':project/status "active"}'
+        ])
         eid = list(result.get(":tempids", {}).values())[0]
 
         entity = db.entity(eid)
@@ -212,7 +233,10 @@ class TestDatomicModelIntegration:
             name: str = Field(":project/name")
             status: str = Field(":project/status")
 
-        db.transact(['{:db/id #db/id[:db.part/user] :project/name "Mobile App" :project/status "planning"}'])
+        db.transact([
+            '{:db/id #db/id[:db.part/user] :project/name "Mobile App" '
+            ':project/status "planning"}'
+        ])
 
         results = db.query(
             "[:find ?name ?status :where [?e :project/name ?name] [?e :project/status ?status]]"
@@ -232,7 +256,10 @@ class TestDatomicModelIntegration:
             name: str = Field(":project/name")
             tags: list[str] = Field(":project/tags", cardinality=MANY_CARD)
 
-        result = db.transact(['{:db/id #db/id[:db.part/user] :project/name "Data Pipeline" :project/tags ["python" "etl" "data"]}'])
+        result = db.transact([
+            '{:db/id #db/id[:db.part/user] :project/name "Data Pipeline" '
+            ':project/tags ["python" "etl" "data"]}'
+        ])
         eid = list(result.get(":tempids", {}).values())[0]
 
         entity = db.entity(eid)
@@ -249,7 +276,10 @@ class TestDatomicModelIntegration:
             name: str = Field(":project/name")
             status: str = Field(":project/status")
 
-        result = db.transact(['{:db/id #db/id[:db.part/user] :project/name "API Gateway" :project/status "completed"}'])
+        result = db.transact([
+            '{:db/id #db/id[:db.part/user] :project/name "API Gateway" '
+            ':project/status "completed"}'
+        ])
         eid = list(result.get(":tempids", {}).values())[0]
 
         # Load from database
@@ -295,7 +325,10 @@ class TestRegisteredModelIntegration:
         assert model_registry.get_by_namespace("task") is Task
 
         # Use the model
-        result = db.transact(['{:db/id #db/id[:db.part/user] :task/title "Fix bug" :task/priority "high"}'])
+        result = db.transact([
+            '{:db/id #db/id[:db.part/user] :task/title "Fix bug" '
+            ':task/priority "high"}'
+        ])
         eid = list(result.get(":tempids", {}).values())[0]
 
         entity = db.entity(eid)
@@ -317,8 +350,14 @@ class TestQueryWithMultipleFactories:
         )
         db.transact(schema)
 
-        db.transact(['{:db/id #db/id[:db.part/user] :book/title "The Pragmatic Programmer" :book/author "Dave Thomas"}'])
-        db.transact(['{:db/id #db/id[:db.part/user] :book/title "Clean Code" :book/author "Robert Martin"}'])
+        db.transact([
+            '{:db/id #db/id[:db.part/user] :book/title "The Pragmatic Programmer" '
+            ':book/author "Dave Thomas"}'
+        ])
+        db.transact([
+            '{:db/id #db/id[:db.part/user] :book/title "Clean Code" '
+            ':book/author "Robert Martin"}'
+        ])
 
     def test_same_query_different_factories(self, db):
         """Test same query with different row factories."""

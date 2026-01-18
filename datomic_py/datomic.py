@@ -219,7 +219,8 @@ class Datomic:
         """
         # Find the :find clause and extract ?var patterns
         # Handle various :find patterns including pull expressions
-        find_match = re.search(r":find\s+(.*?)(?:\s*:(?:in|where|with|keys|strs|syms)\s|$)", query, re.DOTALL | re.IGNORECASE)
+        pattern = r":find\s+(.*?)(?:\s*:(?:in|where|with|keys|strs|syms)\s|$)"
+        find_match = re.search(pattern, query, re.DOTALL | re.IGNORECASE)
         if find_match:
             find_clause = find_match.group(1)
             # Extract ?var patterns (ignore variables inside pull expressions)

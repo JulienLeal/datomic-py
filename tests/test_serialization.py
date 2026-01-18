@@ -1,5 +1,6 @@
 """Tests for the serialization module."""
 
+import importlib.util
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -293,7 +294,9 @@ class TestEntityFactories:
 
     def test_clean_dict_entity_custom_transform(self):
         """Test clean_dict_entity with custom key transform."""
-        factory = clean_dict_entity(key_transform=lambda k: k.upper().replace(":", "").replace("/", "_"))
+        factory = clean_dict_entity(
+            key_transform=lambda k: k.upper().replace(":", "").replace("/", "_")
+        )
         entity = {":person/name": "Alice"}
         result = factory(entity)
         assert result == {"PERSON_NAME": "Alice"}
@@ -773,12 +776,7 @@ class TestEdgeCases:
 
 
 # Check if Pydantic is available
-try:
-    from pydantic import BaseModel
-
-    HAS_PYDANTIC = True
-except ImportError:
-    HAS_PYDANTIC = False
+HAS_PYDANTIC = importlib.util.find_spec("pydantic") is not None
 
 
 @pytest.mark.skipif(not HAS_PYDANTIC, reason="Pydantic not installed")
@@ -885,7 +883,9 @@ class TestPydanticSupport:
             name: str
             email: str
 
-        factory = pydantic_entity(Person, {"name": ":person/name", "email": ":person/email"}, validate=False)
+        factory = pydantic_entity(
+            Person, {"name": ":person/name", "email": ":person/email"}, validate=False
+        )
         entity = {":person/name": "Alice", ":person/email": "alice@example.com"}
         result = factory(entity)
 

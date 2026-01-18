@@ -148,7 +148,9 @@ model_registry = ModelRegistry()
 
 def register_model(model: type[DatomicModel]) -> type[DatomicModel]:
     """
-    Decorator to register a model with the global registry.
+    Register a model with the global registry.
+
+    Use as a decorator on DatomicModel subclasses.
 
     Usage:
         @register_model

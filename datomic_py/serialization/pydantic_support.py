@@ -19,7 +19,7 @@ Usage:
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any
 
 try:
     from pydantic import BaseModel
@@ -32,10 +32,8 @@ except ImportError:
 if TYPE_CHECKING:
     from pydantic import BaseModel as BaseModelType
 
-T = TypeVar("T", bound="BaseModelType")
 
-
-class PydanticRowFactory(Generic[T]):
+class PydanticRowFactory[T: "BaseModelType"]:
     """
     Row factory that produces Pydantic model instances.
 
@@ -69,6 +67,7 @@ class PydanticRowFactory(Generic[T]):
         self._model_fields = set(model.model_fields.keys())
 
     def __call__(self, row: tuple[Any, ...], columns: Sequence[str]) -> T:
+        """Convert a row tuple to a Pydantic model instance."""
         kwargs: dict[str, Any] = {}
         for col, val in zip(columns, row, strict=True):
             field_name = self._field_mapping.get(col, col)
@@ -79,7 +78,7 @@ class PydanticRowFactory(Generic[T]):
         return self._model(**kwargs)
 
 
-class PydanticEntityFactory(Generic[T]):
+class PydanticEntityFactory[T: "BaseModelType"]:
     """
     Entity factory that produces Pydantic model instances.
 
@@ -117,6 +116,7 @@ class PydanticEntityFactory(Generic[T]):
         self._reverse_mapping = {v: k for k, v in self._field_mapping.items()}
 
     def __call__(self, entity: dict[str, Any]) -> T:
+        """Convert an entity dict to a Pydantic model instance."""
         kwargs: dict[str, Any] = {}
 
         for key, value in entity.items():
@@ -137,7 +137,7 @@ class PydanticEntityFactory(Generic[T]):
         return self._model.model_construct(**kwargs)
 
 
-def pydantic_row(
+def pydantic_row[T: "BaseModelType"](
     model: type[T],
     field_mapping: dict[str, str] | None = None,
 ) -> PydanticRowFactory[T]:
@@ -167,7 +167,7 @@ def pydantic_row(
     return PydanticRowFactory(model, field_mapping)
 
 
-def pydantic_entity(
+def pydantic_entity[T: "BaseModelType"](
     model: type[T],
     field_mapping: dict[str, str] | None = None,
     validate: bool = True,

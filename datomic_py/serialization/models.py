@@ -9,16 +9,12 @@ from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
-    Generic,
     Self,
-    TypeVar,
     get_type_hints,
 )
 
 if TYPE_CHECKING:
     from datomic_py.datomic import Database
-
-T = TypeVar("T")
 
 
 class RefStrategy(Enum):
@@ -128,6 +124,7 @@ class ModelMeta(type):
         namespace: dict[str, Any],
         **kwargs: Any,
     ) -> ModelMeta:
+        """Create new model class and process field definitions."""
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
 
         if name == "DatomicModel":
@@ -306,7 +303,11 @@ class DatomicModel(metaclass=ModelMeta):
         """Fetch a referenced entity."""
         eid = value.get(":db/id", value) if isinstance(value, dict) else value
         entity = db.entity(eid)
-        if ref_model is not None and isinstance(ref_model, type) and issubclass(ref_model, DatomicModel):
+        if (
+            ref_model is not None
+            and isinstance(ref_model, type)
+            and issubclass(ref_model, DatomicModel)
+        ):
             return ref_model.from_entity(entity, db=db)
         return entity
 
@@ -391,7 +392,7 @@ class DatomicModel(metaclass=ModelMeta):
         )
 
 
-class LazyRef(Generic[T]):
+class LazyRef[T]:
     """
     Lazy reference proxy that fetches entity on first access.
 
