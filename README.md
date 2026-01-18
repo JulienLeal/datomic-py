@@ -1,17 +1,17 @@
-# pydatomic
+# datomic-py
 
 A Python library for accessing the [Datomic](http://www.datomic.com) database via its REST API, including an EDN (Extensible Data Notation) parser.
 
 ## Installation
 
 ```bash
-pip install pydatomic
+pip install datomic-py
 ```
 
 Or with uv:
 
 ```bash
-uv add pydatomic
+uv add datomic-py
 ```
 
 ## Requirements
@@ -24,7 +24,7 @@ uv add pydatomic
 ### REST Client
 
 ```python
-from pydatomic import Datomic
+from datomic_py import Datomic
 
 # Connect to Datomic
 conn = Datomic('http://localhost:3000/', 'my-storage')
@@ -57,7 +57,7 @@ entity = db.entity(17592186045417)
 ### EDN Parser
 
 ```python
-from pydatomic import edn_loads
+from datomic_py import edn_loads
 
 # Parse EDN strings
 edn_loads('42')           # 42
@@ -77,7 +77,7 @@ edn_loads('#uuid "550e8400-e29b-41d4-a716-446655440000"')  # UUID
 ### Schema Helpers
 
 ```python
-from pydatomic import Attribute, Schema, STRING, BOOLEAN, ONE, IDENTITY
+from datomic_py import Attribute, Schema, STRING, BOOLEAN, ONE, IDENTITY
 
 schema = Schema(
     Attribute(':user/email', STRING, unique=IDENTITY, index=True),
@@ -104,7 +104,7 @@ uv sync --all-extras
 pytest
 
 # Run tests with coverage
-pytest --cov=pydatomic --cov-report=term-missing
+pytest --cov=datomic_py --cov-report=term-missing
 
 # Run linting
 ruff check .

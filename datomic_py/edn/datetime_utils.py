@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from pydatomic.exceptions import EDNParseError
+from datomic_py.exceptions import EDNParseError
 
 
 def parse_datetime(value: str, pos: int | None = None) -> datetime:

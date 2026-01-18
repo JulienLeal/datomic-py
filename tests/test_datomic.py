@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, Mock, patch
 import httpx
 import pytest
 
-from pydatomic.datomic import Database, Datomic
-from pydatomic.exceptions import DatomicClientError, DatomicConnectionError
+from datomic_py.datomic import Database, Datomic
+from datomic_py.exceptions import DatomicClientError, DatomicConnectionError
 
 
 class TestDatomic:
@@ -18,7 +18,7 @@ class TestDatomic:
         conn = Datomic("http://localhost:3000/", "tdb")
 
         mock_response = Mock(status_code=201)
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -53,7 +53,7 @@ class TestDatomic:
             ),
         )
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -81,7 +81,7 @@ class TestDatomic:
 
         mock_response = Mock(status_code=200, content=b"[[17592186048482]]")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -109,7 +109,7 @@ class TestDatomic:
 
         mock_response = Mock(status_code=200, content=b'[["value"]]')
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -129,7 +129,7 @@ class TestDatomic:
 
         mock_response = Mock(status_code=200, content=b'[["result"]]')
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -149,7 +149,7 @@ class TestDatomic:
 
         mock_response = Mock(status_code=200, content=b'{:person/name "John" :db/id 123}')
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -179,7 +179,7 @@ class TestDatomic:
 
         mock_response = Mock(status_code=200, content=b"[[1]]")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -202,7 +202,7 @@ class TestDatomicErrors:
 
         mock_response = Mock(status_code=500, text="Server error")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -218,7 +218,7 @@ class TestDatomicErrors:
 
         mock_response = Mock(status_code=400, text="Bad request")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -234,7 +234,7 @@ class TestDatomicErrors:
 
         mock_response = Mock(status_code=500, text="Internal error")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -250,7 +250,7 @@ class TestDatomicErrors:
 
         mock_response = Mock(status_code=404, text="Not found")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -270,7 +270,7 @@ class TestDatomicTimeout:
 
         mock_response = Mock(status_code=201)
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -288,7 +288,7 @@ class TestDatomicTimeout:
 
         mock_response = Mock(status_code=201)
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.return_value = mock_response
             mock_client.__enter__.return_value = mock_client
@@ -304,7 +304,7 @@ class TestDatomicTimeout:
         """Test timeout error handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.side_effect = httpx.TimeoutException("Connection timed out")
             mock_client.__enter__.return_value = mock_client
@@ -322,7 +322,7 @@ class TestDatomicConnectionErrors:
         """Test connection error handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.side_effect = httpx.ConnectError("Connection refused")
             mock_client.__enter__.return_value = mock_client
@@ -336,7 +336,7 @@ class TestDatomicConnectionErrors:
         """Test generic request exception handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
 
-        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+        with patch("datomic_py.datomic.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.request.side_effect = httpx.HTTPError("Unknown error")
             mock_client.__enter__.return_value = mock_client

@@ -3,7 +3,7 @@ Datomic testcontainer for integration testing.
 
 This module provides a Docker-based Datomic container for integration testing
 using testcontainers-python. It sets up a Datomic environment with a REST API
-that can be used with the pydatomic client library.
+that can be used with the datomic_py client library.
 
 The container runs:
 - Datomic Pro transactor (in-memory dev mode)
@@ -21,7 +21,7 @@ from testcontainers.core.image import DockerImage
 from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 
 if TYPE_CHECKING:
-    from pydatomic import Datomic
+    from datomic_py import Datomic
 
 # Datomic ports
 TRANSACTOR_PORT = 4334
@@ -36,7 +36,7 @@ class DatomicContainer:
     A testcontainer that runs Datomic Pro with a REST API server.
 
     This container runs a Datomic Pro transactor with an embedded REST server,
-    providing HTTP access to the database compatible with pydatomic.
+    providing HTTP access to the database compatible with datomic_py.
 
     The container is built from scratch using an ARM64/AMD64 compatible base
     image to support both Intel and Apple Silicon Macs.
@@ -84,7 +84,7 @@ class DatomicContainer:
         self._build_image()
 
         self._container = (
-            DockerContainer("pydatomic-datomic-test:latest")
+            DockerContainer("datomic_py-datomic-test:latest")
             .with_exposed_ports(TRANSACTOR_PORT, REST_PORT)
             .waiting_for(LogMessageWaitStrategy("System started").with_startup_timeout(180))
         )
@@ -117,7 +117,7 @@ class DatomicContainer:
             # Build the image
             self._image = DockerImage(
                 path=tmpdir,
-                tag="pydatomic-datomic-test:latest",
+                tag="datomic_py-datomic-test:latest",
             )
             self._image.build()
 
@@ -231,7 +231,7 @@ wait -n $TRANSACTOR_PID $REST_PID
             A configured Datomic client ready to use.
 
         """
-        from pydatomic import Datomic
+        from datomic_py import Datomic
 
         return Datomic(self.get_rest_url(), self.get_storage_alias())
 

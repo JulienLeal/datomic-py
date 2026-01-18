@@ -1,15 +1,15 @@
 __version__ = "0.2.0"
 
-from pydatomic.async_datomic import AsyncDatabase, AsyncDatomic
-from pydatomic.datomic import Database, Datomic
-from pydatomic.edn import loads as edn_loads
-from pydatomic.exceptions import (
+from datomic_py.async_datomic import AsyncDatabase, AsyncDatomic
+from datomic_py.datomic import Database, Datomic
+from datomic_py.edn import loads as edn_loads
+from datomic_py.exceptions import (
     DatomicClientError,
     DatomicConnectionError,
+    DatomicPyError,
     EDNParseError,
-    PydatomicError,
 )
-from pydatomic.schema import (
+from datomic_py.schema import (
     BOOLEAN,
     IDENTITY,
     MANY,
@@ -34,7 +34,7 @@ __all__ = [
     "BOOLEAN",
     "IDENTITY",
     "VALUE",
-    "PydatomicError",
+    "DatomicPyError",
     "DatomicClientError",
     "DatomicConnectionError",
     "EDNParseError",

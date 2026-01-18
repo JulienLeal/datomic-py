@@ -4,7 +4,7 @@ This module provides functions to parse EDN strings into Python objects
 and serialize Python objects to EDN strings.
 
 Example usage:
-    >>> from pydatomic.edn import loads, dumps
+    >>> from datomic_py.edn import loads, dumps
     >>> data = loads('{:name "Alice" :age 30}')
     >>> data
     {':name': 'Alice', ':age': 30}
@@ -14,12 +14,12 @@ Example usage:
 
 from typing import Any
 
-from pydatomic.exceptions import EDNParseError
-from pydatomic.edn.types import SKIP, EDNValue, NAMED_CHARS
-from pydatomic.edn.reader import EdnReader
-from pydatomic.edn.writer import dumps
-from pydatomic.edn.tags import TagRegistry, default_registry
-from pydatomic.edn.datetime_utils import parse_datetime
+from datomic_py.exceptions import EDNParseError
+from datomic_py.edn.types import SKIP, EDNValue, NAMED_CHARS
+from datomic_py.edn.reader import EdnReader
+from datomic_py.edn.writer import dumps
+from datomic_py.edn.tags import TagRegistry, default_registry
+from datomic_py.edn.datetime_utils import parse_datetime
 
 
 def loads(

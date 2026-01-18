@@ -1,7 +1,7 @@
 """Tests for the schema module."""
 
 
-from pydatomic.schema import (
+from datomic_py.schema import (
     BOOLEAN,
     IDENTITY,
     MANY,

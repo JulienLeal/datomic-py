@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from pydatomic.async_datomic import AsyncDatabase, AsyncDatomic
-from pydatomic.exceptions import DatomicClientError, DatomicConnectionError
+from datomic_py.async_datomic import AsyncDatabase, AsyncDatomic
+from datomic_py.exceptions import DatomicClientError, DatomicConnectionError
 
 
 @pytest.fixture
@@ -31,7 +31,7 @@ class TestAsyncDatomic:
         mock_response = MagicMock(status_code=201)
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             db = await conn.create_database("cms")
 
             mock_async_client.request.assert_called_once_with(
@@ -62,7 +62,7 @@ class TestAsyncDatomic:
         )
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             result = await db.transact('[{:db/id #db/id[:db.part/user] :person/name "Peter"}]')
 
         assert result[":db-after"] == {":db/alias": "dev/scratch", ":basis-t": 1000}
@@ -86,7 +86,7 @@ class TestAsyncDatomic:
         mock_response = MagicMock(status_code=200, content=b"[[17592186048482]]")
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             result = await db.query("[:find ?e ?n :where [?e :person/name ?n]]")
 
             assert result == ((17592186048482,),)
@@ -110,7 +110,7 @@ class TestAsyncDatomic:
         mock_response = MagicMock(status_code=200, content=b'[["value"]]')
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             result = await db.query("[:find ?n :where [?e :person/name ?n]]", history=True)
 
             assert result == (("value",),)
@@ -126,7 +126,7 @@ class TestAsyncDatomic:
         mock_response = MagicMock(status_code=200, content=b'[["result"]]')
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             result = await db.query(
                 "[:find ?n :in $ ?e :where [?e :person/name ?n]]", extra_args=[123]
             )
@@ -144,7 +144,7 @@ class TestAsyncDatomic:
         mock_response = MagicMock(status_code=200, content=b'{:person/name "John" :db/id 123}')
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             result = await db.entity(123)
 
             assert result == {":person/name": "John", ":db/id": 123}
@@ -170,7 +170,7 @@ class TestAsyncDatomic:
         mock_response = MagicMock(status_code=200, content=b"[[1]]")
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             # When calling query on AsyncDatabase, it should delegate to conn.query with dbname
             await db.query("[:find ?e :where [?e :test/attr]]")
 
@@ -189,7 +189,7 @@ class TestAsyncDatomicErrors:
         mock_response = MagicMock(status_code=500, text="Server error")
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             with pytest.raises(DatomicClientError, match="Request failed with status 500"):
                 await conn.create_database("cms")
 
@@ -201,7 +201,7 @@ class TestAsyncDatomicErrors:
         mock_response = MagicMock(status_code=400, text="Bad request")
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             with pytest.raises(DatomicClientError, match="Request failed with status 400"):
                 await conn.query("mydb", "invalid query")
 
@@ -213,7 +213,7 @@ class TestAsyncDatomicErrors:
         mock_response = MagicMock(status_code=500, text="Internal error")
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             with pytest.raises(DatomicClientError, match="Request failed with status 500"):
                 await conn.transact("mydb", ["invalid"])
 
@@ -225,7 +225,7 @@ class TestAsyncDatomicErrors:
         mock_response = MagicMock(status_code=404, text="Not found")
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             with pytest.raises(DatomicClientError, match="Request failed with status 404"):
                 await conn.entity("mydb", 123)
 
@@ -241,7 +241,7 @@ class TestAsyncDatomicTimeout:
         mock_response = MagicMock(status_code=201)
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             await conn.create_database("test")
 
             call_args = mock_async_client.request.call_args
@@ -255,7 +255,7 @@ class TestAsyncDatomicTimeout:
         mock_response = MagicMock(status_code=201)
         mock_async_client.request.return_value = mock_response
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_async_client):
             await conn.create_database("test")
 
             call_args = mock_async_client.request.call_args
@@ -271,7 +271,7 @@ class TestAsyncDatomicTimeout:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(DatomicConnectionError, match="timed out"):
                 await conn.create_database("test")
 
@@ -289,7 +289,7 @@ class TestAsyncDatomicConnectionErrors:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(DatomicConnectionError, match="Failed to connect"):
                 await conn.create_database("test")
 
@@ -303,6 +303,6 @@ class TestAsyncDatomicConnectionErrors:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("pydatomic.async_datomic.httpx.AsyncClient", return_value=mock_client):
+        with patch("datomic_py.async_datomic.httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(DatomicClientError, match="Request to.*failed"):
                 await conn.create_database("test")

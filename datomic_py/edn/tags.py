@@ -3,8 +3,8 @@
 from typing import Any, Callable
 from uuid import UUID
 
-from pydatomic.edn.datetime_utils import parse_datetime
-from pydatomic.edn.types import SKIP
+from datomic_py.edn.datetime_utils import parse_datetime
+from datomic_py.edn.types import SKIP
 
 
 # Type for tag handler functions

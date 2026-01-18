@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydatomic.exceptions import EDNParseError
+from datomic_py.exceptions import EDNParseError
 
 
 def dumps(obj: Any, *, indent: int | None = None) -> str:

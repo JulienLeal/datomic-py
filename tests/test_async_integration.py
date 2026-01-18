@@ -1,5 +1,5 @@
 """
-Async integration tests for pydatomic with a real Datomic database.
+Async integration tests for datomic_py with a real Datomic database.
 
 These tests use testcontainers to spin up a Datomic Pro instance
 with a REST API server for testing.
@@ -13,7 +13,7 @@ Note: These tests require Docker to be running.
 
 import pytest
 
-from pydatomic import MANY, ONE, STRING, AsyncDatomic, Attribute, Schema
+from datomic_py import MANY, ONE, STRING, AsyncDatomic, Attribute, Schema
 
 # Mark all tests in this module as integration tests
 pytestmark = pytest.mark.integration

@@ -5,8 +5,8 @@ from uuid import UUID
 
 import pytest
 
-from pydatomic import edn
-from pydatomic.exceptions import EDNParseError
+from datomic_py import edn
+from datomic_py.exceptions import EDNParseError
 
 
 class TestEdnParse:
@@ -427,7 +427,7 @@ class TestEdnTagRegistry:
 
     def test_default_registry_has_known_tags(self):
         """Test that default registry has expected tags."""
-        from pydatomic.edn import default_registry
+        from datomic_py.edn import default_registry
 
         assert default_registry.is_known("inst")
         assert default_registry.is_known("uuid")
@@ -436,7 +436,7 @@ class TestEdnTagRegistry:
 
     def test_register_custom_tag(self):
         """Test registering a custom tag handler."""
-        from pydatomic.edn import TagRegistry
+        from datomic_py.edn import TagRegistry
 
         registry = TagRegistry()
 
@@ -449,7 +449,7 @@ class TestEdnTagRegistry:
 
     def test_unregister_tag(self):
         """Test unregistering a tag handler."""
-        from pydatomic.edn import TagRegistry
+        from datomic_py.edn import TagRegistry
 
         registry = TagRegistry()
         registry.register("temp", lambda v, p: v)
@@ -459,7 +459,7 @@ class TestEdnTagRegistry:
 
     def test_custom_registry_with_loads(self):
         """Test using a custom registry with loads."""
-        from pydatomic.edn import TagRegistry, loads
+        from datomic_py.edn import TagRegistry, loads
 
         registry = TagRegistry()
 
@@ -550,7 +550,7 @@ class TestEdnModuleExports:
 
     def test_edn_subpackage_import(self):
         """Test importing from edn subpackage directly."""
-        from pydatomic.edn import loads, dumps, EdnReader, TagRegistry
+        from datomic_py.edn import loads, dumps, EdnReader, TagRegistry
 
         assert callable(loads)
         assert callable(dumps)

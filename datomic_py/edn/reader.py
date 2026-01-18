@@ -2,9 +2,9 @@
 
 from typing import Callable
 
-from pydatomic.exceptions import EDNParseError
-from pydatomic.edn.types import NAMED_CHARS, SKIP, EDNValue
-from pydatomic.edn.tags import TagRegistry, default_registry
+from datomic_py.exceptions import EDNParseError
+from datomic_py.edn.types import NAMED_CHARS, SKIP, EDNValue
+from datomic_py.edn.tags import TagRegistry, default_registry
 
 
 class EdnReader:

@@ -72,14 +72,14 @@ configure_docker_environment()
 @pytest.fixture
 def mock_httpx():
     """Fixture to mock httpx module."""
-    with patch("pydatomic.datomic.httpx") as mock:
+    with patch("datomic_py.datomic.httpx") as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_httpx_with_exceptions():
     """Fixture to mock httpx module with real exceptions."""
-    with patch("pydatomic.datomic.httpx") as mock:
+    with patch("datomic_py.datomic.httpx") as mock:
         # Preserve the real exception classes
         mock.ConnectError = httpx.ConnectError
         mock.TimeoutException = httpx.TimeoutException
