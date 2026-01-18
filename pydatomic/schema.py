@@ -57,13 +57,3 @@ def Attribute(
 def Schema(*attributes: str) -> tuple[str, ...]:
     """Create a schema from multiple attributes."""
     return attributes
-
-
-if __name__ == "__main__":
-    schema = Schema(
-        Attribute(":task/name", STRING, cardinality=ONE),
-        Attribute(":task/closed", BOOLEAN),
-        Attribute(":data/user", STRING),
-    )
-    for a in schema:
-        print(a)

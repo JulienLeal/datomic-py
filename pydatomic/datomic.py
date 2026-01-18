@@ -1,5 +1,6 @@
 """Datomic REST API client."""
 
+from typing import Any
 from urllib.parse import urljoin
 
 import httpx
@@ -32,7 +33,8 @@ class Datomic:
 
     def db_url(self, dbname: str) -> str:
         """Construct the database URL."""
-        return urljoin(self.location, "data/") + self.storage + "/" + dbname
+        base = urljoin(self.location, "data/")
+        return f"{base}{self.storage}/{dbname}"
 
     def _request(
         self,
@@ -70,8 +72,20 @@ class Datomic:
         )
         return Database(dbname, self)
 
-    def transact(self, dbname: str, data: list[str]) -> dict:
-        """Execute a transaction."""
+    def transact(self, dbname: str, data: list[str]) -> dict[str, Any]:
+        """
+        Execute a transaction against the database.
+
+        Args:
+            dbname: The name of the database.
+            data: A list of EDN strings representing transaction data.
+                  Each string should be a valid Datomic transaction map.
+
+        Returns:
+            A dict containing the transaction result with keys like
+            ':db-before', ':db-after', ':tx-data', and ':tempids'.
+
+        """
         data_str = f"[{'\n'.join(data)}\n]"
         r = self._request(
             "post",
@@ -83,9 +97,21 @@ class Datomic:
         return loads(r.content)
 
     def query(
-        self, dbname: str, query: str, extra_args: list | None = None, history: bool = False
-    ) -> tuple:
-        """Execute a query against the database."""
+        self, dbname: str, query: str, extra_args: list[Any] | None = None, history: bool = False
+    ) -> tuple[tuple[Any, ...], ...]:
+        """
+        Execute a query against the database.
+
+        Args:
+            dbname: The name of the database.
+            query: A Datomic query in EDN format.
+            extra_args: Optional list of additional query arguments.
+            history: If True, query against the full history of the database.
+
+        Returns:
+            A tuple of tuples containing the query results.
+
+        """
         if extra_args is None:
             extra_args = []
         args = "[{:db/alias " + self.storage + "/" + dbname
@@ -101,7 +127,7 @@ class Datomic:
         )
         return loads(r.content)
 
-    def entity(self, dbname: str, eid: int) -> dict:
+    def entity(self, dbname: str, eid: int) -> dict[str, Any]:
         """Retrieve an entity by ID."""
         r = self._request(
             "get",
@@ -111,23 +137,3 @@ class Datomic:
             expected_status=(200,),
         )
         return loads(r.content)
-
-
-if __name__ == "__main__":
-    q = """[{
-  :db/id #db/id[:db.part/db]
-  :db/ident :person/name
-  :db/valueType :db.type/string
-  :db/cardinality :db.cardinality/one
-  :db/doc "A person's name"
-  :db.install/_attribute :db.part/db}]"""
-
-    conn = Datomic("http://localhost:3000/", "tdb")
-    db = conn.create_database("cms")
-    db.transact(q)
-    db.transact('[{:db/id #db/id[:db.part/user] :person/name "Peter"}]')
-    r = db.query("[:find ?e ?n :where [?e :person/name ?n]]")
-    print(r)
-    eid = r[0][0]
-    print(db.query("[:find ?n :in $ ?e :where [?e :person/name ?n]]", [eid], history=True))
-    print(db.entity(eid))

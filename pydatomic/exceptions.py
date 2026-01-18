@@ -9,7 +9,7 @@ class DatomicClientError(PydatomicError):
     """HTTP client errors."""
 
 
-class DatomicConnectionError(DatomicClientError):
+class DatomicConnectionError(PydatomicError):
     """Connection/network errors."""
 
 

@@ -17,7 +17,7 @@ uv add pydatomic
 ## Requirements
 
 - Python 3.12+
-- requests
+- httpx
 
 ## Usage
 

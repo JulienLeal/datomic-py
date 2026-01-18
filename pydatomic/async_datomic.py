@@ -1,5 +1,6 @@
 """Async Datomic REST API client."""
 
+from typing import Any
 from urllib.parse import urljoin
 
 import httpx
@@ -32,7 +33,8 @@ class AsyncDatomic:
 
     def db_url(self, dbname: str) -> str:
         """Construct the database URL."""
-        return urljoin(self.location, "data/") + self.storage + "/" + dbname
+        base = urljoin(self.location, "data/")
+        return f"{base}{self.storage}/{dbname}"
 
     async def _request(
         self,
@@ -70,8 +72,20 @@ class AsyncDatomic:
         )
         return AsyncDatabase(dbname, self)
 
-    async def transact(self, dbname: str, data: list[str]) -> dict:
-        """Execute a transaction."""
+    async def transact(self, dbname: str, data: list[str]) -> dict[str, Any]:
+        """
+        Execute a transaction against the database.
+
+        Args:
+            dbname: The name of the database.
+            data: A list of EDN strings representing transaction data.
+                  Each string should be a valid Datomic transaction map.
+
+        Returns:
+            A dict containing the transaction result with keys like
+            ':db-before', ':db-after', ':tx-data', and ':tempids'.
+
+        """
         data_str = f"[{'\n'.join(data)}\n]"
         r = await self._request(
             "post",
@@ -83,9 +97,21 @@ class AsyncDatomic:
         return loads(r.content)
 
     async def query(
-        self, dbname: str, query: str, extra_args: list | None = None, history: bool = False
-    ) -> tuple:
-        """Execute a query against the database."""
+        self, dbname: str, query: str, extra_args: list[Any] | None = None, history: bool = False
+    ) -> tuple[tuple[Any, ...], ...]:
+        """
+        Execute a query against the database.
+
+        Args:
+            dbname: The name of the database.
+            query: A Datomic query in EDN format.
+            extra_args: Optional list of additional query arguments.
+            history: If True, query against the full history of the database.
+
+        Returns:
+            A tuple of tuples containing the query results.
+
+        """
         if extra_args is None:
             extra_args = []
         args = "[{:db/alias " + self.storage + "/" + dbname
@@ -101,7 +127,7 @@ class AsyncDatomic:
         )
         return loads(r.content)
 
-    async def entity(self, dbname: str, eid: int) -> dict:
+    async def entity(self, dbname: str, eid: int) -> dict[str, Any]:
         """Retrieve an entity by ID."""
         r = await self._request(
             "get",
