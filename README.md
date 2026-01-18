@@ -107,6 +107,85 @@ schema = Schema(
 )
 ```
 
+### Serialization
+
+Transform query results and entities into Python objects.
+
+#### Row Factories
+
+```python
+from datomic_py.serialization import dict_row, namedtuple_row, dataclass_row
+from dataclasses import dataclass
+
+# Dict rows
+results = db.query(
+    '[:find ?name ?email :where [?e :person/name ?name] [?e :person/email ?email]]',
+    row_factory=dict_row
+)
+# -> ({'name': 'Alice', 'email': 'alice@example.com'}, ...)
+
+# Named tuple rows
+results = db.query(query, row_factory=namedtuple_row('Person'))
+# -> (Person(name='Alice', email='alice@example.com'), ...)
+
+# Dataclass rows
+@dataclass
+class PersonRow:
+    name: str
+    email: str
+
+results = db.query(query, row_factory=dataclass_row(PersonRow))
+```
+
+#### Entity Factories
+
+```python
+from datomic_py.serialization import clean_dict_entity, dataclass_entity
+
+# Clean dict (removes namespace prefixes)
+entity = db.entity(123, entity_factory=clean_dict_entity())
+# -> {'id': 123, 'name': 'Alice', 'email': 'alice@example.com'}
+
+# With namespace prefix
+entity = db.entity(123, entity_factory=clean_dict_entity(include_namespace=True))
+# -> {'db_id': 123, 'person_name': 'Alice', 'person_email': 'alice@example.com'}
+
+# Dataclass entity
+@dataclass
+class Person:
+    name: str
+    email: str
+
+entity = db.entity(123, entity_factory=dataclass_entity(Person, {
+    'name': ':person/name',
+    'email': ':person/email'
+}))
+```
+
+#### DatomicModel
+
+```python
+from datomic_py.serialization import DatomicModel, Field, Cardinality, register_model
+
+@register_model
+class Person(DatomicModel):
+    name: str = Field(':person/name')
+    email: str = Field(':person/email')
+    friends: list[int] = Field(':person/friends', cardinality=Cardinality.MANY, ref=True)
+
+# From entity
+entity = db.entity(123)
+person = Person.from_entity(entity)
+print(person.name, person.friends)
+
+# From query row
+results = db.query('[:find ?name ?email :where [?e :person/name ?name] [?e :person/email ?email]]')
+person = Person.from_row(results[0], ('name', 'email'))
+
+# To dict for transactions
+data = person.to_dict()
+```
+
 ## Development
 
 This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
