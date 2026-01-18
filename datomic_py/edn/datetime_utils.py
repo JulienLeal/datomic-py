@@ -1,12 +1,13 @@
 """EDN datetime parsing utilities."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from datomic_py.exceptions import EDNParseError
 
 
 def parse_datetime(value: str, pos: int | None = None) -> datetime:
-    """Parse an ISO 8601 datetime string.
+    """
+    Parse an ISO 8601 datetime string.
 
     Uses Python's fromisoformat with preprocessing for EDN-specific formats.
     Supports Z suffix and various timezone offset formats.
@@ -21,6 +22,7 @@ def parse_datetime(value: str, pos: int | None = None) -> datetime:
 
     Raises:
         EDNParseError: If the datetime format is invalid.
+
     """
     pos_info = f" at position {pos}" if pos is not None else ""
 
@@ -39,7 +41,7 @@ def parse_datetime(value: str, pos: int | None = None) -> datetime:
         dt = datetime.fromisoformat(normalized)
         # If no timezone info, assume UTC
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
+            dt = dt.replace(tzinfo=UTC)
         return dt
     except ValueError:
         pass
@@ -57,7 +59,7 @@ def parse_datetime(value: str, pos: int | None = None) -> datetime:
             dt = datetime.strptime(value, fmt)
             # If no timezone info, assume UTC
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=UTC)
             return dt
         except ValueError:
             continue
