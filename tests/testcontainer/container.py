@@ -123,7 +123,7 @@ class DatomicContainer:
 
     def _get_dockerfile(self) -> str:
         """Read the Dockerfile template for the Datomic image."""
-        dockerfile_path = Path(__file__).with_name("dockerfile.Datomic")
+        dockerfile_path = Path(__file__).parent / "dockerfile.Datomic"
         dockerfile_template = dockerfile_path.read_text()
         return dockerfile_template.format(
             datomic_version=self.datomic_version,

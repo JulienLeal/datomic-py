@@ -95,7 +95,7 @@ def datomic_container():
     Using module scope to avoid starting a new container for each test,
     which would be slow.
     """
-    from pydatomic.testcontainer import DatomicContainer
+    from tests.testcontainer import DatomicContainer
 
     with DatomicContainer() as container:
         yield container
