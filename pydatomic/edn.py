@@ -328,23 +328,3 @@ def loads(s: str | bytes, max_depth: int = 100) -> Any:
 
     reader = EdnReader(s, max_depth=max_depth)
     return reader.read_value()
-
-
-if __name__ == "__main__":
-    tests = [
-        '"helloworld"',
-        "23",
-        "23.11",
-        "true",
-        "false",
-        "nil",
-        ":hello",
-        "[:hello]",
-        "[1 2]",
-        '#{true "hello" 12}',
-        '#inst "2012-09-10T23:51:55.840-00:00"',
-        "(\\a \\b \\c \\d)",
-        "{:a 1 :b 2 :c 3 :d 4}",
-    ]
-    for test in tests:
-        print(f"{test} -> {loads(test)}")
