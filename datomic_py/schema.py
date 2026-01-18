@@ -1,11 +1,27 @@
 """Datomic schema definition helpers."""
 
+# Cardinality constants
 ONE = ":db.cardinality/one"
 MANY = ":db.cardinality/many"
+
+# Uniqueness constants
 IDENTITY = ":db.unique/identity"
 VALUE = ":db.unique/value"
+
+# Value type constants
 STRING = ":db.type/string"
 BOOLEAN = ":db.type/boolean"
+LONG = ":db.type/long"
+BIGINT = ":db.type/bigint"
+FLOAT = ":db.type/float"
+DOUBLE = ":db.type/double"
+BIGDEC = ":db.type/bigdec"
+INSTANT = ":db.type/instant"
+UUID = ":db.type/uuid"
+URI = ":db.type/uri"
+KEYWORD = ":db.type/keyword"
+REF = ":db.type/ref"
+BYTES = ":db.type/bytes"
 
 
 def Attribute(

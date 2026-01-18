@@ -1,6 +1,38 @@
 # datomic-py
 
-A Python library for accessing the [Datomic](http://www.datomic.com) database via its REST API, including an EDN (Extensible Data Notation) parser.
+[![PyPI version](https://badge.fury.io/py/datomic-py.svg)](https://badge.fury.io/py/datomic-py)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A Python library for accessing the [Datomic](http://www.datomic.com) database via its REST API.
+
+**Features:**
+- Sync and async REST clients for Datomic
+- Full EDN (Extensible Data Notation) parser
+- Schema definition helpers
+- Query result serialization (dict, namedtuple, dataclass)
+- Entity-to-model mapping with `DatomicModel`
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Basic Usage](#basic-usage)
+  - [REST Client](#rest-client)
+  - [Async REST Client](#async-rest-client)
+  - [EDN Parser](#edn-parser)
+- [Advanced Features](#advanced-features)
+  - [Schema Helpers](#schema-helpers)
+  - [Serialization](#serialization)
+- [Development](#development)
+- [License](#license)
+- [Credits](#credits)
+
+## Requirements
+
+- Python 3.12+
+- httpx
 
 ## Installation
 
@@ -14,12 +46,24 @@ Or with uv:
 uv add datomic-py
 ```
 
-## Requirements
+## Quick Start
 
-- Python 3.12+
-- httpx
+```python
+from datomic_py import Datomic
 
-## Usage
+# Connect and create database
+conn = Datomic('http://localhost:3000/', 'my-storage')
+db = conn.create_database('my-db')
+
+# Transact data
+db.transact('[{:db/id #db/id[:db.part/user] :person/name "Alice"}]')
+
+# Query
+results = db.query('[:find ?e ?n :where [?e :person/name ?n]]')
+print(results)  # ((17592186045417, 'Alice'),)
+```
+
+## Basic Usage
 
 ### REST Client
 
@@ -77,6 +121,8 @@ asyncio.run(main())
 
 ### EDN Parser
 
+The EDN parser can be used standalone, independent of the Datomic client.
+
 ```python
 from datomic_py import edn_loads
 
@@ -95,6 +141,8 @@ edn_loads('#inst "2023-01-15T10:30:00.000-00:00"')  # datetime
 edn_loads('#uuid "550e8400-e29b-41d4-a716-446655440000"')  # UUID
 ```
 
+## Advanced Features
+
 ### Schema Helpers
 
 ```python
@@ -105,6 +153,85 @@ schema = Schema(
     Attribute(':user/name', STRING, cardinality=ONE),
     Attribute(':user/active', BOOLEAN),
 )
+```
+
+### Serialization
+
+Transform query results and entities into Python objects.
+
+#### Row Factories
+
+```python
+from datomic_py.serialization import dict_row, namedtuple_row, dataclass_row
+from dataclasses import dataclass
+
+# Dict rows
+results = db.query(
+    '[:find ?name ?email :where [?e :person/name ?name] [?e :person/email ?email]]',
+    row_factory=dict_row
+)
+# -> ({'name': 'Alice', 'email': 'alice@example.com'}, ...)
+
+# Named tuple rows
+results = db.query(query, row_factory=namedtuple_row('Person'))
+# -> (Person(name='Alice', email='alice@example.com'), ...)
+
+# Dataclass rows
+@dataclass
+class PersonRow:
+    name: str
+    email: str
+
+results = db.query(query, row_factory=dataclass_row(PersonRow))
+```
+
+#### Entity Factories
+
+```python
+from datomic_py.serialization import clean_dict_entity, dataclass_entity
+
+# Clean dict (removes namespace prefixes)
+entity = db.entity(123, entity_factory=clean_dict_entity())
+# -> {'id': 123, 'name': 'Alice', 'email': 'alice@example.com'}
+
+# With namespace prefix
+entity = db.entity(123, entity_factory=clean_dict_entity(include_namespace=True))
+# -> {'db_id': 123, 'person_name': 'Alice', 'person_email': 'alice@example.com'}
+
+# Dataclass entity
+@dataclass
+class Person:
+    name: str
+    email: str
+
+entity = db.entity(123, entity_factory=dataclass_entity(Person, {
+    'name': ':person/name',
+    'email': ':person/email'
+}))
+```
+
+#### DatomicModel
+
+```python
+from datomic_py.serialization import DatomicModel, Field, Cardinality, register_model
+
+@register_model
+class Person(DatomicModel):
+    name: str = Field(':person/name')
+    email: str = Field(':person/email')
+    friends: list[int] = Field(':person/friends', cardinality=Cardinality.MANY, ref=True)
+
+# From entity
+entity = db.entity(123)
+person = Person.from_entity(entity)
+print(person.name, person.friends)
+
+# From query row
+results = db.query('[:find ?name ?email :where [?e :person/name ?name] [?e :person/email ?email]]')
+person = Person.from_row(results[0], ('name', 'email'))
+
+# To dict for transactions
+data = person.to_dict()
 ```
 
 ## Development
