@@ -1,4 +1,5 @@
-"""Integration tests for pydatomic with a real Datomic database.
+"""
+Integration tests for pydatomic with a real Datomic database.
 
 These tests use testcontainers to spin up a Datomic Pro instance
 with a REST API server for testing.
@@ -12,8 +13,7 @@ Note: These tests require Docker to be running.
 
 import pytest
 
-from pydatomic import Schema, Attribute, STRING, ONE, MANY
-
+from pydatomic import MANY, ONE, STRING, Attribute, Schema
 
 # Mark all tests in this module as integration tests
 pytestmark = pytest.mark.integration
@@ -224,7 +224,8 @@ class TestHistoryIntegration:
 
 
 class TestDatabaseCreation:
-    """Test database creation operation.
+    """
+    Test database creation operation.
 
     This test class is kept separate and run last since creating multiple
     databases can cause issues with the container.

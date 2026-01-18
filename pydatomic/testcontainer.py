@@ -1,4 +1,5 @@
-"""Datomic testcontainer for integration testing.
+"""
+Datomic testcontainer for integration testing.
 
 This module provides a Docker-based Datomic container for integration testing
 using testcontainers-python. It sets up a Datomic environment with a REST API
@@ -31,7 +32,8 @@ DATOMIC_VERSION = "1.0.7482"
 
 
 class DatomicContainer:
-    """A testcontainer that runs Datomic Pro with a REST API server.
+    """
+    A testcontainer that runs Datomic Pro with a REST API server.
 
     This container runs a Datomic Pro transactor with an embedded REST server,
     providing HTTP access to the database compatible with pydatomic.
@@ -52,11 +54,13 @@ class DatomicContainer:
         storage_alias: str = "dev",
         datomic_version: str = DATOMIC_VERSION,
     ):
-        """Initialize the Datomic testcontainer.
+        """
+        Initialize the Datomic testcontainer.
 
         Args:
             storage_alias: The storage alias to use for the REST API.
             datomic_version: The version of Datomic Pro to use.
+
         """
         self.storage_alias = storage_alias
         self.datomic_version = datomic_version
@@ -66,10 +70,12 @@ class DatomicContainer:
         self._started = False
 
     def start(self) -> DatomicContainer:
-        """Start the Datomic container.
+        """
+        Start the Datomic container.
 
         Returns:
             Self for method chaining.
+
         """
         if self._started:
             return self
@@ -165,17 +171,17 @@ wait -n $TRANSACTOR_PID $REST_PID
 
     def _wait_for_rest_server(self, timeout: int = 120) -> None:
         """Wait for the REST server to be ready."""
-        import requests
+        import httpx
 
         url = self.get_rest_url()
         start_time = time.time()
 
         while time.time() - start_time < timeout:
             try:
-                response = requests.get(f"{url}data/", timeout=5)
+                response = httpx.get(f"{url}data/", timeout=5)
                 if response.status_code == 200:
                     return
-            except requests.exceptions.RequestException:
+            except httpx.HTTPError:
                 pass
             time.sleep(2)
 
@@ -193,10 +199,12 @@ wait -n $TRANSACTOR_PID $REST_PID
         self._started = False
 
     def get_rest_url(self) -> str:
-        """Get the URL for the Datomic REST API.
+        """
+        Get the URL for the Datomic REST API.
 
         Returns:
             The HTTP URL to connect to the REST server.
+
         """
         if not self._container:
             raise RuntimeError("Container not started")
@@ -206,18 +214,22 @@ wait -n $TRANSACTOR_PID $REST_PID
         return f"http://{host}:{port}/"
 
     def get_storage_alias(self) -> str:
-        """Get the storage alias for connecting to Datomic.
+        """
+        Get the storage alias for connecting to Datomic.
 
         Returns:
             The storage alias to use with the Datomic client.
+
         """
         return self.storage_alias
 
     def get_connection(self) -> Datomic:
-        """Get a Datomic connection object.
+        """
+        Get a Datomic connection object.
 
         Returns:
             A configured Datomic client ready to use.
+
         """
         from pydatomic import Datomic
 

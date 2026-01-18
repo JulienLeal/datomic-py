@@ -4,12 +4,13 @@ import os
 import subprocess
 from unittest.mock import patch
 
+import httpx
 import pytest
-import requests
 
 
 def get_docker_host() -> str | None:
-    """Get the Docker host from docker context or environment.
+    """
+    Get the Docker host from docker context or environment.
 
     Supports:
     - Standard Docker (Linux): uses default /var/run/docker.sock
@@ -18,6 +19,7 @@ def get_docker_host() -> str | None:
 
     Returns:
         The Docker host URL, or None to use the default socket.
+
     """
     # First check if DOCKER_HOST is already set
     if os.environ.get("DOCKER_HOST"):
@@ -45,7 +47,8 @@ def get_docker_host() -> str | None:
 
 
 def configure_docker_environment():
-    """Configure environment variables for Docker/testcontainers.
+    """
+    Configure environment variables for Docker/testcontainers.
 
     This function detects the Docker setup and configures the environment
     accordingly. It works with:
@@ -67,24 +70,27 @@ configure_docker_environment()
 
 
 @pytest.fixture
-def mock_requests():
-    """Fixture to mock requests module."""
-    with patch("pydatomic.datomic.requests") as mock:
+def mock_httpx():
+    """Fixture to mock httpx module."""
+    with patch("pydatomic.datomic.httpx") as mock:
         yield mock
 
 
 @pytest.fixture
-def mock_requests_with_exceptions():
-    """Fixture to mock requests module with real exceptions."""
-    with patch("pydatomic.datomic.requests") as mock:
+def mock_httpx_with_exceptions():
+    """Fixture to mock httpx module with real exceptions."""
+    with patch("pydatomic.datomic.httpx") as mock:
         # Preserve the real exception classes
-        mock.exceptions = requests.exceptions
+        mock.ConnectError = httpx.ConnectError
+        mock.TimeoutException = httpx.TimeoutException
+        mock.HTTPError = httpx.HTTPError
         yield mock
 
 
 @pytest.fixture(scope="module")
 def datomic_container():
-    """Provide a Datomic container for the test module.
+    """
+    Provide a Datomic container for the test module.
 
     Using module scope to avoid starting a new container for each test,
     which would be slow.
@@ -103,7 +109,8 @@ def conn(datomic_container):
 
 @pytest.fixture(scope="module")
 def db(conn):
-    """Provide a database for testing.
+    """
+    Provide a database for testing.
 
     Uses a single database for all tests to avoid resource issues.
     """

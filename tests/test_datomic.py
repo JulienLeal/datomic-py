@@ -1,10 +1,10 @@
 """Tests for the Datomic REST client."""
 
 from datetime import datetime
-from unittest.mock import Mock, call
+from unittest.mock import MagicMock, Mock, patch
 
+import httpx
 import pytest
-import requests
 
 from pydatomic.datomic import Database, Datomic
 from pydatomic.exceptions import DatomicClientError, DatomicConnectionError
@@ -13,25 +13,35 @@ from pydatomic.exceptions import DatomicClientError, DatomicConnectionError
 class TestDatomic:
     """Tests for Datomic client."""
 
-    def test_create_db(self, mock_requests):
+    def test_create_db(self):
         """Verify create_database()."""
         conn = Datomic("http://localhost:3000/", "tdb")
 
-        mock_requests.post.return_value = Mock(status_code=201)
-        db = conn.create_database("cms")
+        mock_response = Mock(status_code=201)
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-        assert mock_requests.post.mock_calls == [
-            call("http://localhost:3000/data/tdb/", data={"db-name": "cms"}, timeout=30.0)
-        ]
-        assert isinstance(db, Database)
-        assert db.name == "cms"
+            db = conn.create_database("cms")
 
-    def test_transact(self, mock_requests):
+            mock_client.request.assert_called_once_with(
+                "POST",
+                "http://localhost:3000/data/tdb/",
+                data={"db-name": "cms"},
+                timeout=30.0,
+            )
+            assert isinstance(db, Database)
+            assert db.name == "cms"
+
+    def test_transact(self):
         """Verify transact()."""
         conn = Datomic("http://localhost:3000/", "tdb")
         db = Database("db", conn)
 
-        mock_requests.post.return_value = Mock(
+        mock_response = Mock(
             status_code=201,
             content=(
                 b'{:db-before {:basis-t 63, :db/alias "dev/scratch"}, '
@@ -43,7 +53,14 @@ class TestDatomic:
             ),
         )
 
-        result = db.transact('[{:db/id #db/id[:db.part/user] :person/name "Peter"}]')
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
+
+            result = db.transact('[{:db/id #db/id[:db.part/user] :person/name "Peter"}]')
 
         assert result[":db-after"] == {":db/alias": "dev/scratch", ":basis-t": 1000}
         assert result[":db-before"] == {":db/alias": "dev/scratch", ":basis-t": 63}
@@ -57,18 +74,25 @@ class TestDatomic:
         assert isinstance(tx_data[0][":v"], datetime)
         assert tx_data[1][":v"] == "hello REST world"
 
-    def test_query(self, mock_requests):
+    def test_query(self):
         """Verify query()."""
         conn = Datomic("http://localhost:3000/", "tdb")
         db = Database("db", conn)
 
-        mock_requests.get.return_value = Mock(status_code=200, content=b"[[17592186048482]]")
+        mock_response = Mock(status_code=200, content=b"[[17592186048482]]")
 
-        result = db.query("[:find ?e ?n :where [?e :person/name ?n]]")
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-        assert result == ((17592186048482,),)
-        assert mock_requests.get.mock_calls == [
-            call(
+            result = db.query("[:find ?e ?n :where [?e :person/name ?n]]")
+
+            assert result == ((17592186048482,),)
+            mock_client.request.assert_called_once_with(
+                "GET",
                 "http://localhost:3000/api/query",
                 headers={"Accept": "application/edn"},
                 params={
@@ -77,167 +101,247 @@ class TestDatomic:
                 },
                 timeout=30.0,
             )
-        ]
 
-    def test_query_with_history(self, mock_requests):
+    def test_query_with_history(self):
         """Verify query() with history flag."""
         conn = Datomic("http://localhost:3000/", "tdb")
         db = Database("db", conn)
 
-        mock_requests.get.return_value = Mock(status_code=200, content=b'[["value"]]')
+        mock_response = Mock(status_code=200, content=b'[["value"]]')
 
-        result = db.query("[:find ?n :where [?e :person/name ?n]]", history=True)
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-        assert result == (("value",),)
-        call_args = mock_requests.get.call_args
-        assert ":history true" in call_args[1]["params"]["args"]
+            result = db.query("[:find ?n :where [?e :person/name ?n]]", history=True)
 
-    def test_query_with_extra_args(self, mock_requests):
+            assert result == (("value",),)
+            call_args = mock_client.request.call_args
+            assert ":history true" in call_args[1]["params"]["args"]
+
+    def test_query_with_extra_args(self):
         """Verify query() with extra arguments."""
         conn = Datomic("http://localhost:3000/", "tdb")
         db = Database("db", conn)
 
-        mock_requests.get.return_value = Mock(status_code=200, content=b'[["result"]]')
+        mock_response = Mock(status_code=200, content=b'[["result"]]')
 
-        result = db.query("[:find ?n :in $ ?e :where [?e :person/name ?n]]", extra_args=[123])
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-        assert result == (("result",),)
-        call_args = mock_requests.get.call_args
-        assert "123" in call_args[1]["params"]["args"]
+            result = db.query("[:find ?n :in $ ?e :where [?e :person/name ?n]]", extra_args=[123])
 
-    def test_entity(self, mock_requests):
+            assert result == (("result",),)
+            call_args = mock_client.request.call_args
+            assert "123" in call_args[1]["params"]["args"]
+
+    def test_entity(self):
         """Verify entity()."""
         conn = Datomic("http://localhost:3000/", "tdb")
         db = Database("db", conn)
 
-        mock_requests.get.return_value = Mock(
-            status_code=200, content=b'{:person/name "John" :db/id 123}'
-        )
+        mock_response = Mock(status_code=200, content=b'{:person/name "John" :db/id 123}')
 
-        result = db.entity(123)
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-        assert result == {":person/name": "John", ":db/id": 123}
-        assert mock_requests.get.mock_calls == [
-            call(
+            result = db.entity(123)
+
+            assert result == {":person/name": "John", ":db/id": 123}
+            mock_client.request.assert_called_once_with(
+                "GET",
                 "http://localhost:3000/data/tdb/db/-/entity",
                 headers={"Accept": "application/edn"},
                 params={"e": 123},
                 timeout=30.0,
             )
-        ]
 
     def test_db_url(self):
         """Verify db_url construction."""
         conn = Datomic("http://localhost:3000/", "tdb")
         assert conn.db_url("mydb") == "http://localhost:3000/data/tdb/mydb"
 
-    def test_database_delegation(self, mock_requests):
+    def test_database_delegation(self):
         """Verify Database delegates to Datomic connection."""
         conn = Datomic("http://localhost:3000/", "tdb")
         db = Database("testdb", conn)
 
-        mock_requests.get.return_value = Mock(status_code=200, content=b"[[1]]")
+        mock_response = Mock(status_code=200, content=b"[[1]]")
 
-        # When calling query on Database, it should delegate to conn.query with dbname
-        db.query("[:find ?e :where [?e :test/attr]]")
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-        call_args = mock_requests.get.call_args
-        assert "testdb" in call_args[1]["params"]["args"]
+            # When calling query on Database, it should delegate to conn.query with dbname
+            db.query("[:find ?e :where [?e :test/attr]]")
+
+            call_args = mock_client.request.call_args
+            assert "testdb" in call_args[1]["params"]["args"]
 
 
 class TestDatomicErrors:
     """Tests for error handling in Datomic client."""
 
-    def test_create_database_failure(self, mock_requests):
+    def test_create_database_failure(self):
         """Test create_database with error response."""
         conn = Datomic("http://localhost:3000/", "tdb")
 
-        mock_requests.post.return_value = Mock(status_code=500, text="Server error")
+        mock_response = Mock(status_code=500, text="Server error")
 
-        with pytest.raises(DatomicClientError, match="Request failed with status 500"):
-            conn.create_database("cms")
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-    def test_query_failure(self, mock_requests):
+            with pytest.raises(DatomicClientError, match="Request failed with status 500"):
+                conn.create_database("cms")
+
+    def test_query_failure(self):
         """Test query with error response."""
         conn = Datomic("http://localhost:3000/", "tdb")
 
-        mock_requests.get.return_value = Mock(status_code=400, text="Bad request")
+        mock_response = Mock(status_code=400, text="Bad request")
 
-        with pytest.raises(DatomicClientError, match="Request failed with status 400"):
-            conn.query("mydb", "invalid query")
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-    def test_transact_failure(self, mock_requests):
+            with pytest.raises(DatomicClientError, match="Request failed with status 400"):
+                conn.query("mydb", "invalid query")
+
+    def test_transact_failure(self):
         """Test transact with error response."""
         conn = Datomic("http://localhost:3000/", "tdb")
 
-        mock_requests.post.return_value = Mock(status_code=500, text="Internal error")
+        mock_response = Mock(status_code=500, text="Internal error")
 
-        with pytest.raises(DatomicClientError, match="Request failed with status 500"):
-            conn.transact("mydb", ["invalid"])
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-    def test_entity_failure(self, mock_requests):
+            with pytest.raises(DatomicClientError, match="Request failed with status 500"):
+                conn.transact("mydb", ["invalid"])
+
+    def test_entity_failure(self):
         """Test entity with error response."""
         conn = Datomic("http://localhost:3000/", "tdb")
 
-        mock_requests.get.return_value = Mock(status_code=404, text="Not found")
+        mock_response = Mock(status_code=404, text="Not found")
 
-        with pytest.raises(DatomicClientError, match="Request failed with status 404"):
-            conn.entity("mydb", 123)
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
+
+            with pytest.raises(DatomicClientError, match="Request failed with status 404"):
+                conn.entity("mydb", 123)
 
 
 class TestDatomicTimeout:
     """Tests for timeout handling in Datomic client."""
 
-    def test_default_timeout(self, mock_requests_with_exceptions):
+    def test_default_timeout(self):
         """Test that default timeout is used."""
         conn = Datomic("http://localhost:3000/", "tdb")
-        mock_requests_with_exceptions.post.return_value = Mock(status_code=201)
 
-        conn.create_database("test")
+        mock_response = Mock(status_code=201)
 
-        call_args = mock_requests_with_exceptions.post.call_args
-        assert call_args[1]["timeout"] == 30.0
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-    def test_custom_timeout(self, mock_requests_with_exceptions):
+            conn.create_database("test")
+
+            call_args = mock_client.request.call_args
+            assert call_args[1]["timeout"] == 30.0
+
+    def test_custom_timeout(self):
         """Test that custom timeout is used."""
         conn = Datomic("http://localhost:3000/", "tdb", timeout=60.0)
-        mock_requests_with_exceptions.post.return_value = Mock(status_code=201)
 
-        conn.create_database("test")
+        mock_response = Mock(status_code=201)
 
-        call_args = mock_requests_with_exceptions.post.call_args
-        assert call_args[1]["timeout"] == 60.0
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.return_value = mock_response
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-    def test_timeout_error(self, mock_requests_with_exceptions):
+            conn.create_database("test")
+
+            call_args = mock_client.request.call_args
+            assert call_args[1]["timeout"] == 60.0
+
+    def test_timeout_error(self):
         """Test timeout error handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
-        mock_requests_with_exceptions.post.side_effect = requests.exceptions.Timeout(
-            "Connection timed out"
-        )
 
-        with pytest.raises(DatomicConnectionError, match="timed out"):
-            conn.create_database("test")
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.side_effect = httpx.TimeoutException("Connection timed out")
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
+
+            with pytest.raises(DatomicConnectionError, match="timed out"):
+                conn.create_database("test")
 
 
 class TestDatomicConnectionErrors:
     """Tests for connection error handling in Datomic client."""
 
-    def test_connection_error(self, mock_requests_with_exceptions):
+    def test_connection_error(self):
         """Test connection error handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
-        mock_requests_with_exceptions.post.side_effect = requests.exceptions.ConnectionError(
-            "Connection refused"
-        )
 
-        with pytest.raises(DatomicConnectionError, match="Failed to connect"):
-            conn.create_database("test")
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.side_effect = httpx.ConnectError("Connection refused")
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
 
-    def test_request_exception(self, mock_requests_with_exceptions):
+            with pytest.raises(DatomicConnectionError, match="Failed to connect"):
+                conn.create_database("test")
+
+    def test_request_exception(self):
         """Test generic request exception handling."""
         conn = Datomic("http://localhost:3000/", "tdb")
-        mock_requests_with_exceptions.post.side_effect = requests.exceptions.RequestException(
-            "Unknown error"
-        )
 
-        with pytest.raises(DatomicClientError, match="Request to.*failed"):
-            conn.create_database("test")
+        with patch("pydatomic.datomic.httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client.request.side_effect = httpx.HTTPError("Unknown error")
+            mock_client.__enter__.return_value = mock_client
+            mock_client.__exit__.return_value = None
+            mock_client_class.return_value = mock_client
+
+            with pytest.raises(DatomicClientError, match="Request to.*failed"):
+                conn.create_database("test")

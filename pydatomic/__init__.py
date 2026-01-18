@@ -1,5 +1,6 @@
 __version__ = "0.2.0"
 
+from pydatomic.async_datomic import AsyncDatabase, AsyncDatomic
 from pydatomic.datomic import Database, Datomic
 from pydatomic.edn import loads as edn_loads
 from pydatomic.exceptions import (
@@ -20,6 +21,8 @@ from pydatomic.schema import (
 )
 
 __all__ = [
+    "AsyncDatabase",
+    "AsyncDatomic",
     "Database",
     "Datomic",
     "edn_loads",

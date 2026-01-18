@@ -18,7 +18,8 @@ def Attribute(
     fulltext: bool = False,
     noHistory: bool = False,
 ) -> str:
-    """Create a Datomic attribute definition.
+    """
+    Create a Datomic attribute definition.
 
     Creates an EDN map representing a Datomic schema attribute.
     Only includes optional attributes when they have non-default values.
@@ -35,6 +36,7 @@ def Attribute(
 
     Returns:
         An EDN string representing the attribute definition.
+
     """
     parts = [f":db/ident {ident}"]
     parts.append(f":db/valueType {valueType}")
