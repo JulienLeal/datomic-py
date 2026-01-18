@@ -29,8 +29,6 @@ dev = [
     "pytest-asyncio>=0.24.0",
     "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
-]
-integration = [
     "testcontainers>=4.0.0",
 ]
 
