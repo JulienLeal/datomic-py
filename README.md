@@ -117,3 +117,4 @@ MIT License - see LICENSE file for details.
 ## Credits
 
 Migrated to Python 3.12 with modern tooling (uv, pytest, pyproject.toml).
+Based on the original `pydatomic` project: https://github.com/gns24/pydatomic
