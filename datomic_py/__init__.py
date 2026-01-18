@@ -31,6 +31,9 @@ from datomic_py.schema import (
     Schema,
 )
 
+# Re-export serialization module for convenience
+from datomic_py import serialization
+
 __all__ = [
     # Clients
     "AsyncDatabase",
@@ -69,4 +72,6 @@ __all__ = [
     "EDNParseError",
     # Version
     "__version__",
+    # Serialization module
+    "serialization",
 ]
