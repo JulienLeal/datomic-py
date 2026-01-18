@@ -1,6 +1,38 @@
 # datomic-py
 
-A Python library for accessing the [Datomic](http://www.datomic.com) database via its REST API, including an EDN (Extensible Data Notation) parser.
+[![PyPI version](https://badge.fury.io/py/datomic-py.svg)](https://badge.fury.io/py/datomic-py)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A Python library for accessing the [Datomic](http://www.datomic.com) database via its REST API.
+
+**Features:**
+- Sync and async REST clients for Datomic
+- Full EDN (Extensible Data Notation) parser
+- Schema definition helpers
+- Query result serialization (dict, namedtuple, dataclass)
+- Entity-to-model mapping with `DatomicModel`
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Basic Usage](#basic-usage)
+  - [REST Client](#rest-client)
+  - [Async REST Client](#async-rest-client)
+  - [EDN Parser](#edn-parser)
+- [Advanced Features](#advanced-features)
+  - [Schema Helpers](#schema-helpers)
+  - [Serialization](#serialization)
+- [Development](#development)
+- [License](#license)
+- [Credits](#credits)
+
+## Requirements
+
+- Python 3.12+
+- httpx
 
 ## Installation
 
@@ -14,12 +46,24 @@ Or with uv:
 uv add datomic-py
 ```
 
-## Requirements
+## Quick Start
 
-- Python 3.12+
-- httpx
+```python
+from datomic_py import Datomic
 
-## Usage
+# Connect and create database
+conn = Datomic('http://localhost:3000/', 'my-storage')
+db = conn.create_database('my-db')
+
+# Transact data
+db.transact('[{:db/id #db/id[:db.part/user] :person/name "Alice"}]')
+
+# Query
+results = db.query('[:find ?e ?n :where [?e :person/name ?n]]')
+print(results)  # ((17592186045417, 'Alice'),)
+```
+
+## Basic Usage
 
 ### REST Client
 
@@ -77,6 +121,8 @@ asyncio.run(main())
 
 ### EDN Parser
 
+The EDN parser can be used standalone, independent of the Datomic client.
+
 ```python
 from datomic_py import edn_loads
 
@@ -94,6 +140,8 @@ edn_loads('nil')          # None
 edn_loads('#inst "2023-01-15T10:30:00.000-00:00"')  # datetime
 edn_loads('#uuid "550e8400-e29b-41d4-a716-446655440000"')  # UUID
 ```
+
+## Advanced Features
 
 ### Schema Helpers
 
