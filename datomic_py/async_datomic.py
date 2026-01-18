@@ -81,6 +81,7 @@ class AsyncDatomic:
 
         Returns:
             An AsyncDatabase instance that delegates calls to this connection.
+
         """
         return AsyncDatabase(dbname, self)
 
@@ -177,6 +178,7 @@ class AsyncDatomic:
             from datomic_py.serialization import dict_row
             results = await conn.query(db, q, row_factory=dict_row)
             # -> ({"name": "Alice"}, {"name": "Bob"})
+
         """
         from urllib.parse import urljoin
 
@@ -213,6 +215,7 @@ class AsyncDatomic:
 
         Returns:
             A tuple of variable names from the :find clause.
+
         """
         # Find the :find clause and extract ?var patterns
         # Handle various :find patterns including pull expressions
@@ -271,6 +274,7 @@ class AsyncDatomic:
             from datomic_py.serialization import clean_dict_entity
             entity = await conn.entity(db, 123, entity_factory=clean_dict_entity())
             # -> {"db_id": 123, "name": "Alice", ...}
+
         """
         r = await self._request(
             "get",

@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Any
 from uuid import UUID
 
 import pytest
@@ -12,16 +11,12 @@ from datomic_py.serialization import (
     MANY,
     ONE,
     Cardinality,
-    CleanDictEntityFactory,
     CompiledConverter,
-    DataclassEntityFactory,
-    DataclassRowFactory,
     DatomicModel,
     Field,
     FieldDescriptor,
     LazyRef,
     ModelRegistry,
-    NamedTupleRowFactory,
     RefStrategy,
     TypeConverter,
     clean_dict_entity,

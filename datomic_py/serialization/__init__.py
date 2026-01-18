@@ -53,6 +53,7 @@ Example:
 
     entity = db.entity(123)
     person = Person.from_entity(entity)
+
 """
 
 from datomic_py.serialization.converters import (

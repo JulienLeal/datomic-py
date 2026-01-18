@@ -1,4 +1,5 @@
-"""Optional Pydantic model support for datomic-py.
+"""
+Optional Pydantic model support for datomic-py.
 
 This module provides row and entity factories that produce Pydantic model instances.
 Pydantic is NOT a required dependency - this module gracefully handles its absence.
@@ -48,6 +49,7 @@ class PydanticRowFactory(Generic[T]):
         factory = pydantic_row(Person)
         result = factory(("Alice", "alice@example.com"), ["name", "email"])
         # -> Person(name='Alice', email='alice@example.com')
+
     """
 
     __slots__ = ("_model", "_field_mapping", "_model_fields")
@@ -91,6 +93,7 @@ class PydanticEntityFactory(Generic[T]):
         factory = pydantic_entity(Person, {":person/name": "name", ":person/email": "email"})
         person = factory({":person/name": "Alice", ":person/email": "alice@example.com"})
         # -> Person(name='Alice', email='alice@example.com')
+
     """
 
     __slots__ = ("_model", "_field_mapping", "_validate", "_model_fields", "_reverse_mapping")
@@ -159,6 +162,7 @@ def pydantic_row(
             email: str
 
         results = db.query(q, row_factory=pydantic_row(Person))
+
     """
     return PydanticRowFactory(model, field_mapping)
 
@@ -195,5 +199,6 @@ def pydantic_entity(
             "name": ":person/name",
             "email": ":person/email"
         }))
+
     """
     return PydanticEntityFactory(model, field_mapping, validate)

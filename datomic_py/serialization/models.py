@@ -55,6 +55,7 @@ class FieldDescriptor:
         converter: Optional custom converter function
         default: Default value if attribute is missing
         default_factory: Factory for default value
+
     """
 
     attr: str
@@ -98,6 +99,7 @@ def Field(
         class Person(DatomicModel):
             name: str = Field(":person/name")
             friends: list[int] = Field(":person/friends", cardinality=MANY, ref=True)
+
     """
     return FieldDescriptor(
         attr=attr,
@@ -223,6 +225,7 @@ class DatomicModel(metaclass=ModelMeta):
 
         Returns:
             A new model instance
+
         """
         kwargs: dict[str, Any] = {}
 
@@ -327,6 +330,7 @@ class DatomicModel(metaclass=ModelMeta):
 
         Returns:
             A new model instance
+
         """
         entity = dict(zip(columns, row, strict=True))
         return cls.from_entity(entity, ref_strategy=ref_strategy, db=db)
@@ -340,6 +344,7 @@ class DatomicModel(metaclass=ModelMeta):
 
         Returns:
             Dict with Datomic attribute names as keys
+
         """
         result: dict[str, Any] = {}
 

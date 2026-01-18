@@ -27,7 +27,6 @@ from datomic_py.serialization import (
     register_model,
 )
 from datomic_py.serialization.models import MANY as MANY_CARD
-from datomic_py.serialization.models import RefStrategy
 
 # Mark all tests in this module as integration tests
 pytestmark = pytest.mark.integration

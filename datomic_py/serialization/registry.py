@@ -21,6 +21,7 @@ class ModelRegistry:
         registry = ModelRegistry()
         registry.register(Person)
         model_cls = registry.get("Person")
+
     """
 
     __slots__ = ("_by_name", "_by_namespace")
@@ -35,6 +36,7 @@ class ModelRegistry:
 
         Args:
             model: The DatomicModel subclass to register
+
         """
         self._by_name[model.__name__] = model
         if hasattr(model, "__namespace__") and model.__namespace__:
@@ -49,6 +51,7 @@ class ModelRegistry:
 
         Returns:
             The model class or None
+
         """
         return self._by_name.get(name)
 
@@ -61,6 +64,7 @@ class ModelRegistry:
 
         Returns:
             The model class or None
+
         """
         return self._by_namespace.get(namespace)
 
@@ -90,6 +94,7 @@ class ModelRegistry:
 
         Returns:
             List of warning/error messages (empty if all OK)
+
         """
         warnings: list[str] = []
 
@@ -152,6 +157,7 @@ def register_model(model: type[DatomicModel]) -> type[DatomicModel]:
 
     Returns:
         The model class unchanged
+
     """
     model_registry.register(model)
     return model

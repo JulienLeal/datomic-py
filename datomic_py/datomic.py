@@ -81,13 +81,12 @@ class Datomic:
 
         Returns:
             A Database instance that delegates calls to this connection.
+
         """
         return Database(dbname, self)
 
     def create_database(self, dbname: str) -> Database:
         """Create a new database."""
-        from urllib.parse import urljoin
-
         self._request(
             "post",
             self.db_url(""),
@@ -179,6 +178,7 @@ class Datomic:
             from datomic_py.serialization import dict_row
             results = conn.query(db, q, row_factory=dict_row)
             # -> ({"name": "Alice"}, {"name": "Bob"})
+
         """
         from urllib.parse import urljoin
 
@@ -215,6 +215,7 @@ class Datomic:
 
         Returns:
             A tuple of variable names from the :find clause.
+
         """
         # Find the :find clause and extract ?var patterns
         # Handle various :find patterns including pull expressions
@@ -273,6 +274,7 @@ class Datomic:
             from datomic_py.serialization import clean_dict_entity
             entity = conn.entity(db, 123, entity_factory=clean_dict_entity())
             # -> {"db_id": 123, "name": "Alice", ...}
+
         """
         r = self._request(
             "get",

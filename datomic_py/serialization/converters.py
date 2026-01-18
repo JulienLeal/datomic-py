@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
@@ -58,7 +58,7 @@ def _to_datetime(value: Any) -> datetime:
         s = s[:-1] + "+00:00"
     dt = datetime.fromisoformat(s)
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     return dt
 
 
@@ -79,6 +79,7 @@ class TypeConverter:
         converter = TypeConverter()
         converter.register(":db.type/instant", lambda v: datetime.fromisoformat(v))
         result = converter.convert(value, ":db.type/instant")
+
     """
 
     __slots__ = ("_converters", "_python_type_map")
@@ -120,6 +121,7 @@ class TypeConverter:
             datomic_type: The Datomic type string (e.g., ":db.type/string")
             converter: A callable that converts the value, or a type for passthrough
             python_type: Optional Python type for reverse mapping
+
         """
         if isinstance(converter, type):
             self._converters[datomic_type] = converter
@@ -164,6 +166,7 @@ class CompiledConverter:
             {"name": ":db.type/string", "age": ":db.type/long"}
         )
         row = compiled.convert_row({"name": "Alice", "age": "30"})
+
     """
 
     __slots__ = ("_field_converters",)

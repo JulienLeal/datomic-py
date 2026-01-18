@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import fields as dataclass_fields, is_dataclass
+from dataclasses import fields as dataclass_fields
+from dataclasses import is_dataclass
 from typing import Any, Generic, NamedTuple, Protocol, TypeVar, runtime_checkable
 
 T = TypeVar("T")
@@ -51,6 +52,7 @@ class NamedTupleRowFactory(Generic[T]):
         factory = namedtuple_row("Person")
         result = factory((1, "Alice"), ["id", "name"])
         # -> Person(id=1, name='Alice')
+
     """
 
     __slots__ = ("_nt_class", "_columns", "_name")
@@ -88,6 +90,7 @@ def namedtuple_row(name: str = "Row") -> NamedTupleRowFactory[Any]:
         results = db.query(q, row_factory=namedtuple_row("Person"))
         for person in results:
             print(person.name, person.email)
+
     """
     return NamedTupleRowFactory(name)
 
@@ -106,6 +109,7 @@ class DataclassRowFactory(Generic[T]):
 
         factory = dataclass_row(Person)
         result = factory(("Alice", "alice@example.com"), ["name", "email"])
+
     """
 
     __slots__ = ("_cls", "_field_mapping", "_dc_fields")
@@ -153,6 +157,7 @@ def dataclass_row(
             "name": "person_name",
             "email": "person_email"
         }))
+
     """
     return DataclassRowFactory(cls, field_mapping)
 
@@ -175,6 +180,7 @@ class CleanDictEntityFactory:
         factory = clean_dict_entity(include_namespace=False)
         result = factory({":person/name": "Alice", ":person/email": "alice@example.com"})
         # -> {"name": "Alice", "email": "alice@example.com"}
+
     """
 
     __slots__ = ("_include_namespace", "_key_transform")
@@ -226,6 +232,7 @@ def clean_dict_entity(
     Example:
         entity = db.entity(123, entity_factory=clean_dict_entity())
         print(entity["name"])  # Instead of entity[":person/name"]
+
     """
     return CleanDictEntityFactory(include_namespace, key_transform)
 
@@ -242,6 +249,7 @@ class DataclassEntityFactory(Generic[T]):
 
         factory = dataclass_entity(Person, {":person/name": "name", ":person/email": "email"})
         person = factory({":person/name": "Alice", ":person/email": "alice@example.com"})
+
     """
 
     __slots__ = ("_cls", "_field_mapping", "_strict", "_reverse_mapping", "_dc_fields")
@@ -310,5 +318,6 @@ def dataclass_entity(
             "name": ":person/name",
             "email": ":person/email"
         }))
+
     """
     return DataclassEntityFactory(cls, field_mapping, strict)
