@@ -775,3 +775,151 @@ class TestEdgeCases:
         """Test dict_row with mismatched row/columns."""
         with pytest.raises(ValueError):
             dict_row((1, 2), ["a"])  # strict=True in zip
+
+
+# Check if Pydantic is available
+try:
+    from pydantic import BaseModel
+
+    HAS_PYDANTIC = True
+except ImportError:
+    HAS_PYDANTIC = False
+
+
+@pytest.mark.skipif(not HAS_PYDANTIC, reason="Pydantic not installed")
+class TestPydanticSupport:
+    """Tests for Pydantic model support."""
+
+    def test_pydantic_row_factory(self):
+        """Test PydanticRowFactory creates Pydantic model instances."""
+        from pydantic import BaseModel
+
+        from datomic_py.serialization.pydantic_support import pydantic_row
+
+        class Person(BaseModel):
+            name: str
+            email: str
+
+        factory = pydantic_row(Person)
+        row = ("Alice", "alice@example.com")
+        columns = ["name", "email"]
+        result = factory(row, columns)
+
+        assert isinstance(result, Person)
+        assert result.name == "Alice"
+        assert result.email == "alice@example.com"
+
+    def test_pydantic_row_factory_with_mapping(self):
+        """Test PydanticRowFactory with field mapping."""
+        from pydantic import BaseModel
+
+        from datomic_py.serialization.pydantic_support import pydantic_row
+
+        class Person(BaseModel):
+            person_name: str
+            person_email: str
+
+        factory = pydantic_row(Person, {"name": "person_name", "email": "person_email"})
+        row = ("Alice", "alice@example.com")
+        columns = ["name", "email"]
+        result = factory(row, columns)
+
+        assert result.person_name == "Alice"
+        assert result.person_email == "alice@example.com"
+
+    def test_pydantic_row_factory_sanitizes_columns(self):
+        """Test PydanticRowFactory sanitizes column names."""
+        from pydantic import BaseModel
+
+        from datomic_py.serialization.pydantic_support import pydantic_row
+
+        class Person(BaseModel):
+            person_name: str
+            person_email: str
+
+        factory = pydantic_row(Person)
+        row = ("Alice", "alice@example.com")
+        columns = [":person/name", ":person/email"]
+        result = factory(row, columns)
+
+        assert result.person_name == "Alice"
+        assert result.person_email == "alice@example.com"
+
+    def test_pydantic_entity_factory(self):
+        """Test PydanticEntityFactory creates Pydantic model instances."""
+        from pydantic import BaseModel
+
+        from datomic_py.serialization.pydantic_support import pydantic_entity
+
+        class Person(BaseModel):
+            name: str
+            email: str
+
+        factory = pydantic_entity(Person, {"name": ":person/name", "email": ":person/email"})
+        entity = {":db/id": 123, ":person/name": "Alice", ":person/email": "alice@example.com"}
+        result = factory(entity)
+
+        assert isinstance(result, Person)
+        assert result.name == "Alice"
+        assert result.email == "alice@example.com"
+
+    def test_pydantic_entity_factory_auto_mapping(self):
+        """Test PydanticEntityFactory with auto-derived field names."""
+        from pydantic import BaseModel
+
+        from datomic_py.serialization.pydantic_support import pydantic_entity
+
+        class Person(BaseModel):
+            person_name: str
+            person_email: str
+
+        factory = pydantic_entity(Person)
+        entity = {":person/name": "Alice", ":person/email": "alice@example.com"}
+        result = factory(entity)
+
+        assert result.person_name == "Alice"
+        assert result.person_email == "alice@example.com"
+
+    def test_pydantic_entity_factory_no_validate(self):
+        """Test PydanticEntityFactory with validation disabled."""
+        from pydantic import BaseModel
+
+        from datomic_py.serialization.pydantic_support import pydantic_entity
+
+        class Person(BaseModel):
+            name: str
+            email: str
+
+        factory = pydantic_entity(Person, {"name": ":person/name", "email": ":person/email"}, validate=False)
+        entity = {":person/name": "Alice", ":person/email": "alice@example.com"}
+        result = factory(entity)
+
+        assert result.name == "Alice"
+        assert result.email == "alice@example.com"
+
+    def test_pydantic_entity_factory_skips_db_id(self):
+        """Test PydanticEntityFactory skips :db/id by default."""
+        from pydantic import BaseModel
+
+        from datomic_py.serialization.pydantic_support import pydantic_entity
+
+        class Person(BaseModel):
+            name: str
+
+        factory = pydantic_entity(Person, {"name": ":person/name"})
+        entity = {":db/id": 123, ":person/name": "Alice"}
+        result = factory(entity)
+
+        assert result.name == "Alice"
+        assert not hasattr(result, "db_id")
+
+
+class TestPydanticSupportImportError:
+    """Tests for Pydantic support when Pydantic is not installed."""
+
+    def test_has_pydantic_flag(self):
+        """Test HAS_PYDANTIC flag reflects installation status."""
+        from datomic_py.serialization.pydantic_support import HAS_PYDANTIC as module_has_pydantic
+
+        # Should match our local check
+        assert module_has_pydantic == HAS_PYDANTIC
