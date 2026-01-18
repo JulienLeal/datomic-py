@@ -1,14 +1,15 @@
 """EDN reader/parser implementation."""
 
-from typing import Callable
+from collections.abc import Callable
 
-from datomic_py.exceptions import EDNParseError
-from datomic_py.edn.types import NAMED_CHARS, SKIP, EDNValue
 from datomic_py.edn.tags import TagRegistry, default_registry
+from datomic_py.edn.types import NAMED_CHARS, SKIP, EDNValue
+from datomic_py.exceptions import EDNParseError
 
 
 class EdnReader:
-    """EDN reader/parser class.
+    """
+    EDN reader/parser class.
 
     Parses EDN (Extensible Data Notation) strings into Python objects.
 
@@ -17,6 +18,7 @@ class EdnReader:
         pos: Current position in the string.
         length: Length of the input string.
         max_depth: Maximum nesting depth allowed.
+
     """
 
     def __init__(
@@ -25,12 +27,14 @@ class EdnReader:
         max_depth: int = 100,
         tag_registry: TagRegistry | None = None,
     ):
-        """Initialize the EDN reader.
+        """
+        Initialize the EDN reader.
 
         Args:
             s: The EDN string to parse.
             max_depth: Maximum nesting depth allowed (default 100).
             tag_registry: Optional custom tag registry. Uses default if not provided.
+
         """
         self.s = s
         self.pos = 0
@@ -270,12 +274,14 @@ class EdnReader:
         return self.read_symbol_or_keyword(":")
 
     def read_value(self) -> EDNValue | None:
-        """Read a single EDN value.
+        """
+        Read a single EDN value.
 
         Returns:
             The parsed EDN value, or None for empty input.
             Note: EDN nil also returns None. Use loads() which distinguishes
             between empty input and nil.
+
         """
         self.skip_whitespace_and_comments()
 

@@ -8,7 +8,8 @@ from datomic_py.exceptions import EDNParseError
 
 
 def dumps(obj: Any, *, indent: int | None = None) -> str:
-    """Serialize a Python object to an EDN string.
+    """
+    Serialize a Python object to an EDN string.
 
     Args:
         obj: The Python object to serialize.
@@ -25,6 +26,7 @@ def dumps(obj: Any, *, indent: int | None = None) -> str:
         '{:name "Alice" :age 30}'
         >>> dumps([1, 2, 3])
         '[1 2 3]'
+
     """
     return _serialize(obj)
 

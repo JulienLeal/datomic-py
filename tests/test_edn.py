@@ -1,6 +1,6 @@
 """Tests for the EDN parser."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from uuid import UUID
 
 import pytest
@@ -32,7 +32,7 @@ class TestEdnParse:
             ('#{true "hello" 12}', {True, "hello", 12}),
             (
                 '#inst "2012-09-10T23:51:55.840-00:00"',
-                datetime(2012, 9, 10, 23, 51, 55, 840000, tzinfo=timezone.utc),
+                datetime(2012, 9, 10, 23, 51, 55, 840000, tzinfo=UTC),
             ),
             ("(\\a \\b \\c \\d)", ("a", "b", "c", "d")),
             ("{:a 1 :b 2 :c 3 :d 4}", {":a": 1, ":b": 2, ":c": 3, ":d": 4}),
@@ -66,7 +66,7 @@ class TestEdnParse:
                     " ",
                     "€",
                     (True, ()),
-                    (True, datetime(2012, 9, 10, 23, 39, 43, 309000, tzinfo=timezone.utc), True, ""),
+                    (True, datetime(2012, 9, 10, 23, 39, 43, 309000, tzinfo=UTC), True, ""),
                 ),
             ),
             (
@@ -189,7 +189,7 @@ class TestEdnBasic:
     def test_parse_datetime(self):
         """Test parsing datetime."""
         result = edn.loads('#inst "2023-01-15T10:30:00.000-00:00"')
-        assert result == datetime(2023, 1, 15, 10, 30, 0, 0, tzinfo=timezone.utc)
+        assert result == datetime(2023, 1, 15, 10, 30, 0, 0, tzinfo=UTC)
 
     def test_parse_uuid(self):
         """Test parsing UUID."""
@@ -310,27 +310,27 @@ class TestEdnDatetimeFormats:
     def test_datetime_with_minus_offset(self):
         """Test datetime with -00:00 offset."""
         result = edn.loads('#inst "2023-01-15T10:30:00.123-00:00"')
-        assert result == datetime(2023, 1, 15, 10, 30, 0, 123000, tzinfo=timezone.utc)
+        assert result == datetime(2023, 1, 15, 10, 30, 0, 123000, tzinfo=UTC)
 
     def test_datetime_with_plus_offset(self):
         """Test datetime with +00:00 offset."""
         result = edn.loads('#inst "2023-01-15T10:30:00.123+00:00"')
-        assert result == datetime(2023, 1, 15, 10, 30, 0, 123000, tzinfo=timezone.utc)
+        assert result == datetime(2023, 1, 15, 10, 30, 0, 123000, tzinfo=UTC)
 
     def test_datetime_with_z_suffix(self):
         """Test datetime with Z suffix."""
         result = edn.loads('#inst "2023-01-15T10:30:00.123Z"')
-        assert result == datetime(2023, 1, 15, 10, 30, 0, 123000, tzinfo=timezone.utc)
+        assert result == datetime(2023, 1, 15, 10, 30, 0, 123000, tzinfo=UTC)
 
     def test_datetime_without_microseconds(self):
         """Test datetime without microseconds."""
         result = edn.loads('#inst "2023-01-15T10:30:00-00:00"')
-        assert result == datetime(2023, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+        assert result == datetime(2023, 1, 15, 10, 30, 0, tzinfo=UTC)
 
     def test_datetime_without_microseconds_z(self):
         """Test datetime without microseconds with Z suffix."""
         result = edn.loads('#inst "2023-01-15T10:30:00Z"')
-        assert result == datetime(2023, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+        assert result == datetime(2023, 1, 15, 10, 30, 0, tzinfo=UTC)
 
     def test_invalid_datetime_format(self):
         """Test that invalid datetime format raises EDNParseError."""
@@ -550,7 +550,7 @@ class TestEdnModuleExports:
 
     def test_edn_subpackage_import(self):
         """Test importing from edn subpackage directly."""
-        from datomic_py.edn import loads, dumps, EdnReader, TagRegistry
+        from datomic_py.edn import EdnReader, TagRegistry, dumps, loads
 
         assert callable(loads)
         assert callable(dumps)

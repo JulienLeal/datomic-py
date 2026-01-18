@@ -1,7 +1,6 @@
 """EDN type definitions and sentinels."""
 
 from datetime import datetime
-from typing import Union
 from uuid import UUID
 
 
@@ -30,15 +29,15 @@ NAMED_CHARS: dict[str, str] = {
 }
 
 # EDN value type - represents all possible EDN values
-EDNValue = Union[
-    None,
-    bool,
-    int,
-    float,
-    str,
-    datetime,
-    UUID,
-    tuple["EDNValue", ...],
-    frozenset["EDNValue"],
-    dict[str, "EDNValue"],
-]
+EDNValue = (
+    None
+    | bool
+    | int
+    | float
+    | str
+    | datetime
+    | UUID
+    | tuple["EDNValue", ...]
+    | frozenset["EDNValue"]
+    | dict[str, "EDNValue"]
+)
